@@ -26,7 +26,7 @@ def test_connect_device():
 @pytest.mark.chinese_name("准备刷写")
 def test_prepare_flash():
     """准备刷写测试 / Prepare flash test"""
-    assert True
+    assert False
 
 
 # 方式2: 使用中文文档字符串（第一行） / Method 2: Use Chinese docstring (first line)

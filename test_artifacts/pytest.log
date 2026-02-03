@@ -1,0 +1,7 @@
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_api_login because it depends on test_flash_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_api_logout because it depends on test_flash_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_get_status because it depends on test_flash_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_without_chinese_name because it depends on test_flash_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_user_registration because it depends on test_interface_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_user_login because it depends on test_interface_complete
+2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_response_time because it depends on test_function_complete

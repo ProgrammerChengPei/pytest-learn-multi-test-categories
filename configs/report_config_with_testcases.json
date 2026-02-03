@@ -2,7 +2,7 @@
   "template": "templates/test_report_template.xlsx",
   "output_dir": "reports",
   "mappings": {
-    "测试汇总 / Summary": {
+    "测试汇总 Summary": {
       "type": "summary",
       "fields": {
         "报告生成时间 / Report Time": {
@@ -129,7 +129,7 @@
         }
       }
     },
-    "测试详情 / Test Details": {
+    "测试详情 TestDetails": {
       "type": "list",
       "start_row": 2,
       "columns": {
@@ -140,7 +140,8 @@
         },
         "测试名称 / Test Name": {
           "col": "B",
-          "source": "name",
+          "source": "chinese_name",
+          "fallback": "name",
           "format": "string"
         },
         "测试类型 / Test Type": {
@@ -197,10 +198,11 @@
         }
       }
     },
-    "测试用例 / Test Cases": {
+    "测试用例 TestCases": {
       "type": "testcase_mapping",
       "name_column": "B",
-      "result_column": "J",
+      "result_column": "D",
+      "docstring_column": "E",
       "result_mappings": {
         "passed": "通过",
         "failed": "失败",

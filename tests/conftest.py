@@ -16,6 +16,13 @@ project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
 
+# 全局报告生成器实例 / Global report generator instance
+_excel_report_generator = None
+
+# 存储当前测试item / Store current test item
+_current_test_item = None
+
+
 # 全局测试状态存储
 class TestState:
     """Test state manager / 测试状态管理器"""
@@ -136,6 +143,7 @@ def pytest_sessionstart(session):
     Args:
         session: Pytest session object / Pytest会话对象
     """
+    global _excel_report_generator
     from src.template_based_report import TemplateBasedReportGenerator
 
     # 报告配置文件路径 / Report config file path
@@ -145,8 +153,9 @@ def pytest_sessionstart(session):
     generator = TemplateBasedReportGenerator(config_path)
     generator.start()
 
-    # 存储到session对象中 / Store to session object
-    session.config.excel_report_generator = generator
+    # 存储到全局变量和session对象中 / Store to global variable and session object
+    global _excel_report_generator
+    _excel_report_generator = generator
     session.config.session_start_time = time.time()
 
     print(f"\n{'='*70}")
@@ -166,12 +175,20 @@ def pytest_runtest_logreport(report):
     Args:
         report: Test report object / 测试报告对象
     """
+    global _excel_report_generator, _current_test_item
+
     # 只在测试完成时收集结果 / Collect results only when test is complete
     if report.when == 'call':
-        generator = report.session.config.excel_report_generator
+        generator = _excel_report_generator
+        if not generator:
+            return  # 没有初始化报告生成器，跳过 / No report generator initialized, skip
+
+        # 从全局变量获取item / Get item from global variable
+        test_node = _current_test_item
+        if not test_node:
+            return
 
         # 从测试节点获取测试类别 / Get test category from test node
-        test_node = report.node
         test_type = None
         for marker_name in ['flash', 'interface', 'function', 'performance']:
             if test_node.get_closest_marker(marker_name):
@@ -179,15 +196,20 @@ def pytest_runtest_logreport(report):
                 break
 
         if test_type:
+            # 提取docstring用于报告 / Extract docstring for reporting
+            docstring = ''
+            if test_node.obj and test_node.obj.__doc__:
+                docstring = test_node.obj.__doc__.strip()
+
             # 构建测试结果字典 / Build test result dictionary
             test_result = {
-                'name': report.node.name,
+                'name': report.nodeid.split('::')[-1],
                 'category': test_type,
                 'status': 'passed' if report.passed else 'failed' if report.failed else 'skipped',
                 'duration': report.duration,
-                'message': str(report.longrepr) if not report.passed else '',
+                'message': str(report.longrepr) if not report.passed else docstring,
                 'file': str(test_node.fspath),
-                'line': test_node.lineno
+                'line': getattr(test_node, 'lineno', 0) or 0
             }
 
             # 提取测试用例中文名 / Extract Chinese name from test case
@@ -199,14 +221,12 @@ def pytest_runtest_logreport(report):
 
             # 如果没有marker，尝试从文档字符串提取 / Try to extract from docstring if no marker
             if not chinese_name:
-                if test_node.obj and test_node.obj.__doc__:
-                    doc = test_node.obj.__doc__.strip()
+                if docstring:
                     # 检查文档字符串第一行是否是中文 / Check if first line of docstring is Chinese
-                    if doc:
-                        # 简单的判断：如果不是英文开头，可能是中文
-                        if any('\u4e00' <= c <= '\u9fff' for c in doc[:20]):
-                            # 取第一行作为中文名 / Take first line as Chinese name
-                            chinese_name = doc.split('\n')[0].strip()
+                    # 简单的判断：如果不是英文开头，可能是中文
+                    if any('\u4e00' <= c <= '\u9fff' for c in docstring[:20]):
+                        # 取第一行作为中文名 / Take first line as Chinese name
+                        chinese_name = docstring.split('\n')[0].strip()
 
             # 如果找到了中文名，添加到测试结果 / Add to test result if Chinese name found
             if chinese_name:
@@ -227,7 +247,7 @@ def pytest_runtest_logreport(report):
 
             # 打印测试结果摘要 / Print test result summary
             status_icon = "✓" if report.passed else "✗" if report.failed else "⊘"
-            name_display = chinese_name if chinese_name else report.node.name
+            name_display = chinese_name if chinese_name else test_result['name']
             print(f"  [{status_icon}] {test_type.upper()}: {name_display} ({report.duration:.3f}s)")
 
 
@@ -245,9 +265,19 @@ def pytest_runtest_makereport(item, call):
     Returns:
         Modified report / 修改后的报告
     """
-    report = call.result if call else None
+    # 检查call是否有结果 / Check if call has result
+    if not call or not hasattr(call, 'result') or call.when != 'call':
+        return None
 
-    if report and report.when == 'call' and report.passed:
+    try:
+        report = call.result
+        if not report:
+            return None
+    except AttributeError:
+        # call没有有效结果（例如测试失败时） / call has no valid result (e.g., when test fails)
+        return None
+
+    if report.passed:
         test_state = None
 
         # 获取test_state fixture / Get test_state fixture
@@ -284,7 +314,8 @@ def pytest_sessionfinish(session, exitstatus):
         session: Pytest session object / Pytest会话对象
         exitstatus: Exit status code / 退出状态码
     """
-    generator = getattr(session.config, 'excel_report_generator', None)
+    global _excel_report_generator
+    generator = _excel_report_generator
     session_start_time = getattr(session.config, 'session_start_time', None)
 
     if generator and session_start_time:
@@ -423,6 +454,9 @@ def pytest_runtest_setup(item):
     Args:
         item: Test item to be executed / 要执行的测试项
     """
+    global _current_test_item
+    _current_test_item = item  # 存储当前item / Store current item
+
     # 检查测试类型 / Check test type
     test_type = None
     for marker in ['interface', 'function', 'performance']:

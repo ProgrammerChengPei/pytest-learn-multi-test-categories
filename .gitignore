@@ -13,3 +13,12 @@ htmlcov/
 docs/build/
 .DS_Store
 Thumbs.db
+reports/
+.comate/
+.idea/
+.vscode/
+.mypy/
+.mypy_cache/
+log/
+/**/*.log
+test_artifacts/

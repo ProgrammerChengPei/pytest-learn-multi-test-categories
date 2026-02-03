@@ -243,10 +243,16 @@ class TemplateBasedReportGenerator:
 
                 # 获取值 / Get value
                 source = col_config.get('source')
+                fallback = col_config.get('fallback')
+
                 if source == 'index':
                     value = index + 1
                 else:
                     value = result.get(source, '')
+                    # 如果值不存在且配置了fallback，则使用fallback
+                    # If value doesn't exist and fallback is configured, use fallback
+                    if not value and fallback:
+                        value = result.get(fallback, '')
 
                 # 格式化值 / Format value
                 formatted_value = self._format_value(value, col_config)
@@ -343,13 +349,16 @@ class TemplateBasedReportGenerator:
         # 创建详情工作表 / Create details sheet
         self._create_default_details_sheet(wb)
 
+        # 创建测试用例映射工作表 / Create testcase mapping sheet
+        self._create_default_testcase_mapping_sheet(wb)
+
         # 保存模板 / Save template
         self.template_path.parent.mkdir(exist_ok=True, parents=True)
         wb.save(str(self.template_path))
 
     def _create_default_summary_sheet(self, wb: Workbook):
         """创建默认汇总工作表 / Create default summary sheet"""
-        ws = wb.create_sheet("测试汇总 / Summary", 0)
+        ws = wb.create_sheet("测试汇总 Summary", 0)
 
         # 标题样式 / Title style
         title_font = Font(name='微软雅黑', size=16, bold=True, color='FFFFFF')
@@ -399,7 +408,7 @@ class TemplateBasedReportGenerator:
 
     def _create_default_details_sheet(self, wb: Workbook):
         """创建默认详情工作表 / Create default details sheet"""
-        ws = wb.create_sheet("测试详情 / Test Details", 1)
+        ws = wb.create_sheet("测试详情 TestDetails", 1)
 
         # 表头 / Headers
         headers = [
@@ -429,6 +438,53 @@ class TemplateBasedReportGenerator:
         # 冻结首行 / Freeze first row
         ws.freeze_panes = 'A2'
 
+    def _create_default_testcase_mapping_sheet(self, wb: Workbook):
+        """创建默认测试用例映射工作表 / Create default testcase mapping sheet"""
+        ws = wb.create_sheet("测试用例 TestCases", 2)
+
+        # 表头 / Headers
+        headers = [
+            "序号 / No",
+            "测试用例名称 / Test Case Name",
+            "测试类型 / Test Type",
+            "测试结果 / Test Result",
+            "说明 / Description"
+        ]
+
+        header_font = Font(name='微软雅黑', size=11, bold=True)
+        header_fill = PatternFill(start_color='D9E1F2', end_color='D9E1F2', fill_type='solid')
+        widths = [6, 30, 15, 12, 60]
+
+        for col_idx, (header, width) in enumerate(zip(headers, widths), 1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal='center', vertical='center')
+            ws.column_dimensions[ws.cell(row=1, column=col_idx).column_letter].width = width
+
+        # 添加示例数据 / Add example data
+        example_data = [
+            (2, "测试abc", "Flash", "", ""),
+            (3, "连接设备", "Flash", "", ""),
+            (4, "准备刷写", "Flash", "", ""),
+            (5, "API登录测试", "Interface", "", ""),
+            (6, "API登出测试", "Interface", "", ""),
+            (7, "获取设备状态", "Interface", "", ""),
+            (8, "用户注册流程", "Function", "", ""),
+            (9, "用户登录测试", "Function", "", ""),
+            (10, "响应时间测试", "Performance", "", ""),
+        ]
+
+        for row_idx, (no, name, test_type, result, desc) in enumerate(example_data, 2):
+            ws.cell(row=row_idx, column=1, value=no)
+            ws.cell(row=row_idx, column=2, value=name)
+            ws.cell(row=row_idx, column=3, value=test_type)
+            ws.cell(row=row_idx, column=4, value=result)
+            ws.cell(row=row_idx, column=5, value=desc)
+
+        # 冻结首行 / Freeze first row
+        ws.freeze_panes = 'A2'
+
     def _fill_testcase_mapping_sheet(self, ws, sheet_config: Dict[str, Any], data: Dict[str, Any]):
         """
         填充基于测试用例名称映射的工作表 / Fill testcase mapping sheet
@@ -438,13 +494,13 @@ class TemplateBasedReportGenerator:
 
         Excel模板示例：
         ----------------------------------------------------
-        |    A       |       B       |   ...   |   J       |
+        |    A       |       B       |   ...   |   J       |   K       |
         ----------------------------------------------------
-        |    ...     |   测试用例名称  |   ...   |   测试结果 |
+        |    ...     |   测试用例名称  |   ...   |   测试结果 |   说明     |
         ----------------------------------------------------
-        |    12      |   测试abc      |   ...   |           |
+        |    12      |   测试abc      |   ...   |           |           |
         ----------------------------------------------------
-        |    13      |   测试def      |   ...   |           |
+        |    13      |   测试def      |   ...   |           |           |
         ----------------------------------------------------
 
         Args:
@@ -454,6 +510,7 @@ class TemplateBasedReportGenerator:
         """
         name_column = sheet_config.get('name_column', 'B')
         result_column = sheet_config.get('result_column', 'J')
+        docstring_column = sheet_config.get('docstring_column')  # 可选的docstring列
         result_mappings = sheet_config.get('result_mappings', {
             'passed': '通过',
             'failed': '失败',
@@ -464,7 +521,7 @@ class TemplateBasedReportGenerator:
         max_row = ws.max_row
 
         # 构建测试结果映射表 / Build test result mapping table
-        # key: 测试用例中文名, value: 测试状态
+        # key: 测试用例中文名, value: {status, docstring, name}
         test_result_map = {}
         for result in data['results']:
             chinese_name = result.get('chinese_name')
@@ -472,7 +529,15 @@ class TemplateBasedReportGenerator:
                 status = result.get('status', 'skipped')
                 # 映射英文状态到中文显示 / Map English status to Chinese display
                 mapped_status = result_mappings.get(status, status)
-                test_result_map[chinese_name] = mapped_status
+                # 获取docstring，如果没有则使用测试函数名 / Get docstring, use function name if not available
+                docstring = result.get('message', '')
+                if not docstring:
+                    docstring = result.get('name', '')
+                test_result_map[chinese_name] = {
+                    'status': mapped_status,
+                    'original_status': status,
+                    'docstring': docstring
+                }
 
         # 遍历工作表中的每一行，查找匹配的测试用例名称 / Iterate through each row
         found_tests = 0
@@ -483,41 +548,36 @@ class TemplateBasedReportGenerator:
 
             # 如果单元格不为空且在测试结果映射表中
             if test_name and test_name in test_result_map:
-                # 获取对应的结果列单元格 / Get corresponding result column cell
+                test_info = test_result_map[test_name]
+
+                # 填充结果列 / Fill result column
                 result_cell = ws[f'{result_column}{row}']
+                result_cell.value = test_info['status']
 
-                # 填充结果 / Fill result
-                result_cell.value = test_result_map[test_name]
+                # 应用颜色样式 / Apply color style
+                if test_info['original_status'] == 'passed':
+                    result_cell.fill = PatternFill(
+                        start_color='C6EFCE',
+                        end_color='C6EFCE',
+                        fill_type='solid'
+                    )
+                elif test_info['original_status'] == 'failed':
+                    result_cell.fill = PatternFill(
+                        start_color='FFC7CE',
+                        end_color='FFC7CE',
+                        fill_type='solid'
+                    )
+                elif test_info['original_status'] == 'skipped':
+                    result_cell.fill = PatternFill(
+                        start_color='FFEB9C',
+                        end_color='FFEB9C',
+                        fill_type='solid'
+                    )
 
-                # 应用样式 / Apply style
-                if test_name in test_result_map:
-                    original_status = None
-                    # 反向查找原始英文状态 / Reverse lookup original English status
-                    for result in data['results']:
-                        if result.get('chinese_name') == test_name:
-                            original_status = result.get('status')
-                            break
-
-                    if original_status:
-                        # 应用颜色样式 / Apply color style
-                        if original_status == 'passed':
-                            result_cell.fill = PatternFill(
-                                start_color='C6EFCE',
-                                end_color='C6EFCE',
-                                fill_type='solid'
-                            )
-                        elif original_status == 'failed':
-                            result_cell.fill = PatternFill(
-                                start_color='FFC7CE',
-                                end_color='FFC7CE',
-                                fill_type='solid'
-                            )
-                        elif original_status == 'skipped':
-                            result_cell.fill = PatternFill(
-                                start_color='FFEB9C',
-                                end_color='FFEB9C',
-                                fill_type='solid'
-                            )
+                # 填充docstring列（如果配置了的话）/ Fill docstring column (if configured)
+                if docstring_column:
+                    docstring_cell = ws[f'{docstring_column}{row}']
+                    docstring_cell.value = test_info['docstring']
 
                 found_tests += 1
 
