@@ -5,14 +5,15 @@ Template-based Excel Report Generator / 基于模板的Excel报告生成器
 """
 import json
 import time
-from pathlib import Path
-from typing import Dict, Any, List
 from datetime import datetime
-from copy import deepcopy
+from pathlib import Path
+from typing import Any, Dict, List
+
+from openpyxl import Workbook
 
 try:
     from openpyxl import load_workbook
-    from openpyxl.styles import Font, Alignment, PatternFill
+    from openpyxl.styles import Alignment, Font, PatternFill
     OPENPYXL_AVAILABLE = True
 except ImportError:
     OPENPYXL_AVAILABLE = False
@@ -97,6 +98,8 @@ class TemplateBasedReportGenerator:
                     self._fill_summary_sheet(ws, sheet_config, data)
                 elif sheet_type == 'list':
                     self._fill_list_sheet(ws, sheet_config, data)
+                elif sheet_type == 'testcase_mapping':
+                    self._fill_testcase_mapping_sheet(ws, sheet_config, data)
 
         # 生成文件名 / Generate filename
         if not filename:
@@ -329,8 +332,6 @@ class TemplateBasedReportGenerator:
             return
 
         from openpyxl import Workbook
-        from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
-        from openpyxl.utils import get_column_letter
 
         wb = Workbook()
         if 'Sheet' in wb.sheetnames:
@@ -427,6 +428,100 @@ class TemplateBasedReportGenerator:
 
         # 冻结首行 / Freeze first row
         ws.freeze_panes = 'A2'
+
+    def _fill_testcase_mapping_sheet(self, ws, sheet_config: Dict[str, Any], data: Dict[str, Any]):
+        """
+        填充基于测试用例名称映射的工作表 / Fill testcase mapping sheet
+
+        这个功能允许通过测试用例的中文名，将测试结果填充到Excel模板中指定的单元格。
+        实现用例设计和用例脚本的对应关系。
+
+        Excel模板示例：
+        ----------------------------------------------------
+        |    A       |       B       |   ...   |   J       |
+        ----------------------------------------------------
+        |    ...     |   测试用例名称  |   ...   |   测试结果 |
+        ----------------------------------------------------
+        |    12      |   测试abc      |   ...   |           |
+        ----------------------------------------------------
+        |    13      |   测试def      |   ...   |           |
+        ----------------------------------------------------
+
+        Args:
+            ws: 工作表对象 / Worksheet object
+            sheet_config: 工作表配置 / Worksheet config
+            data: 数据字典 / Data dictionary
+        """
+        name_column = sheet_config.get('name_column', 'B')
+        result_column = sheet_config.get('result_column', 'J')
+        result_mappings = sheet_config.get('result_mappings', {
+            'passed': '通过',
+            'failed': '失败',
+            'skipped': '跳过'
+        })
+
+        # 扫描整个工作表，查找测试用例名称 / Scan entire worksheet for test case names
+        max_row = ws.max_row
+
+        # 构建测试结果映射表 / Build test result mapping table
+        # key: 测试用例中文名, value: 测试状态
+        test_result_map = {}
+        for result in data['results']:
+            chinese_name = result.get('chinese_name')
+            if chinese_name:
+                status = result.get('status', 'skipped')
+                # 映射英文状态到中文显示 / Map English status to Chinese display
+                mapped_status = result_mappings.get(status, status)
+                test_result_map[chinese_name] = mapped_status
+
+        # 遍历工作表中的每一行，查找匹配的测试用例名称 / Iterate through each row
+        found_tests = 0
+        for row in range(1, max_row + 1):
+            # 获取名称列的单元格值 / Get value from name column
+            name_cell = ws[f'{name_column}{row}']
+            test_name = str(name_cell.value).strip() if name_cell.value else ''
+
+            # 如果单元格不为空且在测试结果映射表中
+            if test_name and test_name in test_result_map:
+                # 获取对应的结果列单元格 / Get corresponding result column cell
+                result_cell = ws[f'{result_column}{row}']
+
+                # 填充结果 / Fill result
+                result_cell.value = test_result_map[test_name]
+
+                # 应用样式 / Apply style
+                if test_name in test_result_map:
+                    original_status = None
+                    # 反向查找原始英文状态 / Reverse lookup original English status
+                    for result in data['results']:
+                        if result.get('chinese_name') == test_name:
+                            original_status = result.get('status')
+                            break
+
+                    if original_status:
+                        # 应用颜色样式 / Apply color style
+                        if original_status == 'passed':
+                            result_cell.fill = PatternFill(
+                                start_color='C6EFCE',
+                                end_color='C6EFCE',
+                                fill_type='solid'
+                            )
+                        elif original_status == 'failed':
+                            result_cell.fill = PatternFill(
+                                start_color='FFC7CE',
+                                end_color='FFC7CE',
+                                fill_type='solid'
+                            )
+                        elif original_status == 'skipped':
+                            result_cell.fill = PatternFill(
+                                start_color='FFEB9C',
+                                end_color='FFEB9C',
+                                fill_type='solid'
+                            )
+
+                found_tests += 1
+
+        print(f"  ✓ 填充了 {found_tests} 个测试用例结果 / Filled {found_tests} test case results")
 
 
 def generate_report_from_template(config_path: Path) -> str:

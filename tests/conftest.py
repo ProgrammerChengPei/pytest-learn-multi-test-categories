@@ -119,6 +119,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "function: Function tests / 功能测试")
     config.addinivalue_line("markers", "performance: Performance tests / 性能测试")
     config.addinivalue_line("markers", "dependency: Mark test dependencies / 测试依赖标记")
+    config.addinivalue_line("markers", "chinese_name: Chinese name for test case / 测试用例中文名")
 
 
 # ============================================================================
@@ -189,6 +190,28 @@ def pytest_runtest_logreport(report):
                 'line': test_node.lineno
             }
 
+            # 提取测试用例中文名 / Extract Chinese name from test case
+            chinese_name = None
+            # 尝试从自定义marker中获取中文名 / Try to get Chinese name from custom marker
+            chinese_name_marker = test_node.get_closest_marker('chinese_name')
+            if chinese_name_marker:
+                chinese_name = chinese_name_marker.args[0] if chinese_name_marker.args else None
+
+            # 如果没有marker，尝试从文档字符串提取 / Try to extract from docstring if no marker
+            if not chinese_name:
+                if test_node.obj and test_node.obj.__doc__:
+                    doc = test_node.obj.__doc__.strip()
+                    # 检查文档字符串第一行是否是中文 / Check if first line of docstring is Chinese
+                    if doc:
+                        # 简单的判断：如果不是英文开头，可能是中文
+                        if any('\u4e00' <= c <= '\u9fff' for c in doc[:20]):
+                            # 取第一行作为中文名 / Take first line as Chinese name
+                            chinese_name = doc.split('\n')[0].strip()
+
+            # 如果找到了中文名，添加到测试结果 / Add to test result if Chinese name found
+            if chinese_name:
+                test_result['chinese_name'] = chinese_name
+
             # 性能测试额外信息 / Performance test additional info
             if test_type == 'performance':
                 # 尝试从report中提取性能指标 / Try to extract performance metrics from report
@@ -204,7 +227,8 @@ def pytest_runtest_logreport(report):
 
             # 打印测试结果摘要 / Print test result summary
             status_icon = "✓" if report.passed else "✗" if report.failed else "⊘"
-            print(f"  [{status_icon}] {test_type.upper()}: {report.node.name} - {test_result['status']} ({report.duration:.3f}s)")
+            name_display = chinese_name if chinese_name else report.node.name
+            print(f"  [{status_icon}] {test_type.upper()}: {name_display} ({report.duration:.3f}s)")
 
 
 def pytest_runtest_makereport(item, call):

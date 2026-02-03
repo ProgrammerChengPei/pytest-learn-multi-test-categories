@@ -181,6 +181,61 @@ pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
 pytest tests/ -n 4
 ```
 
+## 测试用例中文名映射 / Test Case Chinese Name Mapping
+
+支持通过测试用例的中文名，将测试结果自动填充到Excel模板的指定单元格，实现**用例设计和用例脚本的对应关系**。
+
+Support mapping test results to specified Excel template cells through test case Chinese names, achieving **correspondence between test case design and test scripts**.
+
+### 使用方式 / Usage
+
+**方式1: 使用装饰器 / Method 1: Use Decorator**
+```python
+@pytest.mark.flash
+@pytest.mark.chinese_name("测试abc")
+def test_abc():
+    """测试abc"""
+    assert True
+```
+
+**方式2: 使用中文文档字符串 / Method 2: Use Chinese Docstring**
+```python
+@pytest.mark.interface
+def test_api_login():
+    """API登录测试"""
+    assert True
+```
+
+### Excel模板配置 / Excel Template Configuration
+
+在Excel模板的"测试用例"工作表中：
+- **B列**: 测试用例名称（填写中文名，如"测试abc"）
+- **J列**: 测试结果（自动填充"通过"/"失败"/"跳过"）
+
+| 行号 | B | ... | J |
+|------|---|-----|---|
+| 2 | 测试abc | ... | (自动填充) |
+| 3 | 连接设备 | ... | (自动填充) |
+
+### JSON配置 / JSON Configuration
+
+```json
+{
+  "测试用例 / Test Cases": {
+    "type": "testcase_mapping",
+    "name_column": "B",
+    "result_column": "J",
+    "result_mappings": {
+      "passed": "通过",
+      "failed": "失败",
+      "skipped": "跳过"
+    }
+  }
+}
+```
+
+详细配置指南：[docs/测试用例中文名映射指南.md](docs/测试用例中文名映射指南.md)
+
 ## Test Artifacts / 测试产物
 
 测试运行后会自动生成以下文件：
