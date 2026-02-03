@@ -205,10 +205,10 @@ class SimpleTCPServer:
                             logger.error(f"Error handling timeout connection: {e}")
                             self.connection_manager.remove_connection(sock)
                     
-                    time.sleep(10)  # 每10秒检查一次
+                    time.sleep(self.heartbeat_interval)  # 每10秒检查一次
                 except Exception as e:
                     logger.error(f"Heartbeat monitor error: {e}")
-                    time.sleep(5)
+                    time.sleep(self.heartbeat_interval)
         
         self.heartbeat_thread = threading.Thread(target=monitor, name="HeartbeatMonitor", daemon=True)
         self.heartbeat_thread.start()
