@@ -5,5 +5,5 @@
   "heartbeat_interval": 5,
   "token": "your-secure-token-here",
   "server_timeout": 5.0,
-  "client_timeout": 10.0,
+  "client_timeout": 10.0
 }

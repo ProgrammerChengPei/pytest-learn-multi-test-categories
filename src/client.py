@@ -7,7 +7,7 @@ import threading
 import time
 from typing import Optional
 
-from .log import logger
+from log import load_config, logger
 
 
 class Client:
@@ -172,8 +172,7 @@ def send_requests(client: Client):
 
 if __name__ == "__main__":
     try:
-        with open('configs/config.json', 'r') as f:
-            config = json.load(f)
+        config = load_config('configs/config.json')
         
         client = Client(
             config.get('host', 'localhost'),

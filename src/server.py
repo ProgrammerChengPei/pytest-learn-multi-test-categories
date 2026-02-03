@@ -9,7 +9,7 @@ import threading
 import time
 from typing import Any, Dict, Optional
 
-from .log import logger
+from log import load_config, logger
 
 
 class ConnectionManager:
@@ -82,7 +82,7 @@ class SimpleTCPServer:
             # 设置socket超时
             client_socket.settimeout(self.client_timeout)
             
-            while self.running:
+            while self.running and client_socket in self.connection_manager.active_connections().keys():
                 try:
                     data = client_socket.recv(1024)
                     if not data:
