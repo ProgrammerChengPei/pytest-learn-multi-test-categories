@@ -1,35 +1,61 @@
-2026-02-03 18:00:14,934 - INFO - MainThread - server.py:294 - args.config: E:\程培\pytest插件开发\pytest-viu-design\configs\config.json
-2026-02-03 18:00:14,939 - INFO - MainThread - server.py:226 - Server started on localhost:8080 (max_connections: 100, heartbeat: 5s)
-2026-02-03 18:00:23,028 - INFO - ClientHandler-54638 - server.py:79 - Client connected: ('127.0.0.1', 54638)
-2026-02-03 18:00:23,028 - INFO - MainThread - client.py:49 - Connected to localhost:8080
-2026-02-03 18:00:23,029 - INFO - MainThread - client.py:161 - Sending request batch 1
-2026-02-03 18:00:23,029 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
-2026-02-03 18:00:23,029 - INFO - ClientHandler-54638 - server.py:118 - Received from ('127.0.0.1', 54638): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
-2026-02-03 18:00:23,029 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_time': 1770112823.029663, 'connections': 1}
-2026-02-03 18:00:23,530 - INFO - ClientHandler-54638 - server.py:118 - Received from ('127.0.0.1', 54638): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:00:23'}
-2026-02-03 18:00:23,530 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:00:23'}
-2026-02-03 18:00:23,530 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 2, 'status': 'ok', 'original_text': 'Client message at 2026-02-03 18:00:23', 'server_response': 'Client message at 2026-02-03 18:00:23 - Server processed at 2026-02-03 18:00:23', 'server_timestamp': '2026-02-03 18:00:23'}
-2026-02-03 18:00:24,031 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
-2026-02-03 18:00:24,031 - INFO - ClientHandler-54638 - server.py:118 - Received from ('127.0.0.1', 54638): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
-2026-02-03 18:00:24,032 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 3, 'status': 'healthy'}
-2026-02-03 18:00:24,532 - INFO - MainThread - client.py:170 - Waiting before next batch...
-2026-02-03 18:00:34,940 - WARNING - HeartbeatMonitor - server.py:199 - Connection timeout: ('127.0.0.1', 54638)
-2026-02-03 18:00:34,940 - INFO - HeartbeatMonitor - server.py:187 - Connection closed: ('127.0.0.1', 54638)
-2026-02-03 18:00:34,940 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'command': 'disconnect', 'reason': 'timeout'}
-2026-02-03 18:00:34,940 - ERROR - ClientHandler-54638 - server.py:110 - Error handling client ('127.0.0.1', 54638): [WinError 10038] 在一个非套接字上尝试了一个操作。
-2026-02-03 18:00:34,941 - INFO - ResponseHandler - client.py:84 - Server requested disconnect: timeout
-2026-02-03 18:00:34,941 - INFO - ClientHandler-54638 - server.py:187 - Connection closed: ('127.0.0.1', 54638)
-2026-02-03 18:00:39,533 - INFO - MainThread - client.py:161 - Sending request batch 2
-2026-02-03 18:00:39,534 - INFO - MainThread - client.py:110 - Attempting to reconnect (1/3)
-2026-02-03 18:00:39,535 - INFO - MainThread - client.py:49 - Connected to localhost:8080
-2026-02-03 18:00:39,535 - INFO - ClientHandler-54642 - server.py:79 - Client connected: ('127.0.0.1', 54642)
-2026-02-03 18:00:39,535 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
-2026-02-03 18:00:39,535 - INFO - ClientHandler-54642 - server.py:118 - Received from ('127.0.0.1', 54642): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
-2026-02-03 18:00:39,535 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_time': 1770112839.535769, 'connections': 1}
-2026-02-03 18:00:40,036 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:00:23'}
-2026-02-03 18:00:40,036 - INFO - ClientHandler-54642 - server.py:118 - Received from ('127.0.0.1', 54642): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:00:23'}
-2026-02-03 18:00:40,036 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 2, 'status': 'ok', 'original_text': 'Client message at 2026-02-03 18:00:23', 'server_response': 'Client message at 2026-02-03 18:00:23 - Server processed at 2026-02-03 18:00:40', 'server_timestamp': '2026-02-03 18:00:40'}
-2026-02-03 18:00:40,537 - INFO - MainThread - client.py:122 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
-2026-02-03 18:00:40,537 - INFO - ClientHandler-54642 - server.py:118 - Received from ('127.0.0.1', 54642): {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
-2026-02-03 18:00:40,538 - INFO - ResponseHandler - client.py:80 - Server response: {'type': 'response', 'id': 3, 'status': 'healthy'}
-2026-02-03 18:00:41,038 - INFO - ClientHandler-54642 - server.py:187 - Connection closed: ('127.0.0.1', 54642)
+2026-02-03 18:57:01,461 - INFO - MainThread - server.py:340 - args.config: E:\程培\pytest插件开发\pytest-viu-design\configs\config.json
+2026-02-03 18:57:01,467 - INFO - MainThread - server.py:253 - Server started on localhost:8080 | Max connections: 100 | Heartbeat interval: 5s
+2026-02-03 18:57:04,540 - INFO - MainThread - server.py:263 - Starting connection with ('127.0.0.1', 23666)
+2026-02-03 18:57:04,540 - INFO - ClientHandler-23666 - server.py:105 - New client connection from ('127.0.0.1', 23666)
+2026-02-03 18:57:04,540 - INFO - MainThread - client.py:59 - Connected to localhost:8080
+2026-02-03 18:57:04,541 - INFO - MainThread - client.py:221 - Sending request batch 1
+2026-02-03 18:57:04,541 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:04,541 - INFO - ClientHandler-23666 - server.py:132 - Client ('127.0.0.1', 23666) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:04,742 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:04', 'client_timestamp': '2026-02-03 18:57:04'}
+2026-02-03 18:57:04,742 - INFO - ClientHandler-23666 - server.py:132 - Client ('127.0.0.1', 23666) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:04', 'client_timestamp': '2026-02-03 18:57:04'}
+2026-02-03 18:57:04,943 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:04,943 - INFO - ClientHandler-23666 - server.py:132 - Client ('127.0.0.1', 23666) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:04,943 - INFO - MainThread - client.py:234 - Waiting before next batch...
+2026-02-03 18:57:11,469 - WARNING - HeartbeatMonitor - server.py:227 - Connection timeout: ('127.0.0.1', 23666)
+2026-02-03 18:57:11,469 - INFO - ClientHandler-23666 - server.py:169 - Closing connection with ('127.0.0.1', 23666)
+2026-02-03 18:57:11,469 - INFO - ResponseHandler - client.py:87 - Server closed connection
+2026-02-03 18:57:11,469 - INFO - HeartbeatMonitor - server.py:60 - Connection closed by manager: ('127.0.0.1', 23666), reason: heartbeat_timeout
+2026-02-03 18:57:11,470 - INFO - ResponseHandler - client.py:113 - Response handler exiting
+2026-02-03 18:57:12,944 - INFO - MainThread - client.py:221 - Sending request batch 2
+2026-02-03 18:57:12,944 - INFO - MainThread - client.py:160 - Attempting to reconnect (1/3) in 2s
+2026-02-03 18:57:14,946 - INFO - MainThread - server.py:263 - Starting connection with ('127.0.0.1', 23670)
+2026-02-03 18:57:14,946 - INFO - ClientHandler-23670 - server.py:105 - New client connection from ('127.0.0.1', 23670)
+2026-02-03 18:57:14,970 - INFO - MainThread - client.py:59 - Connected to localhost:8080
+2026-02-03 18:57:14,971 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:14,971 - INFO - ClientHandler-23670 - server.py:132 - Client ('127.0.0.1', 23670) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:15,171 - INFO - ClientHandler-23670 - server.py:132 - Client ('127.0.0.1', 23670) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:04', 'client_timestamp': '2026-02-03 18:57:04'}
+2026-02-03 18:57:15,372 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:15,373 - INFO - ClientHandler-23670 - server.py:132 - Client ('127.0.0.1', 23670) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:17,373 - INFO - MainThread - client.py:189 - Closing client connection
+2026-02-03 18:57:17,374 - INFO - ClientHandler-23670 - server.py:169 - Closing connection with ('127.0.0.1', 23670)
+2026-02-03 18:57:17,374 - INFO - ClientHandler-23670 - server.py:60 - Connection closed by manager: ('127.0.0.1', 23670), reason: handler_exit
+2026-02-03 18:57:19,553 - INFO - MainThread - server.py:263 - Starting connection with ('127.0.0.1', 23673)
+2026-02-03 18:57:19,554 - INFO - ClientHandler-23673 - server.py:105 - New client connection from ('127.0.0.1', 23673)
+2026-02-03 18:57:19,554 - INFO - MainThread - client.py:59 - Connected to localhost:8080
+2026-02-03 18:57:19,555 - INFO - MainThread - client.py:221 - Sending request batch 1
+2026-02-03 18:57:19,555 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:19,555 - INFO - ClientHandler-23673 - server.py:132 - Client ('127.0.0.1', 23673) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:19,756 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:19', 'client_timestamp': '2026-02-03 18:57:19'}
+2026-02-03 18:57:19,756 - INFO - ClientHandler-23673 - server.py:132 - Client ('127.0.0.1', 23673) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:19', 'client_timestamp': '2026-02-03 18:57:19'}
+2026-02-03 18:57:19,973 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:19,973 - INFO - ClientHandler-23673 - server.py:132 - Client ('127.0.0.1', 23673) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:19,973 - INFO - MainThread - client.py:234 - Waiting before next batch...
+2026-02-03 18:57:25,473 - WARNING - HeartbeatMonitor - server.py:227 - Connection timeout: ('127.0.0.1', 23673)
+2026-02-03 18:57:25,473 - INFO - ClientHandler-23673 - server.py:169 - Closing connection with ('127.0.0.1', 23673)
+2026-02-03 18:57:25,473 - INFO - ResponseHandler - client.py:87 - Server closed connection
+2026-02-03 18:57:25,473 - INFO - HeartbeatMonitor - server.py:60 - Connection closed by manager: ('127.0.0.1', 23673), reason: heartbeat_timeout
+2026-02-03 18:57:25,473 - INFO - ResponseHandler - client.py:113 - Response handler exiting
+2026-02-03 18:57:27,973 - INFO - MainThread - client.py:221 - Sending request batch 2
+2026-02-03 18:57:27,974 - INFO - MainThread - client.py:160 - Attempting to reconnect (1/3) in 2s
+2026-02-03 18:57:29,975 - INFO - MainThread - server.py:263 - Starting connection with ('127.0.0.1', 38670)
+2026-02-03 18:57:29,976 - INFO - ClientHandler-38670 - server.py:105 - New client connection from ('127.0.0.1', 38670)
+2026-02-03 18:57:29,990 - INFO - MainThread - client.py:59 - Connected to localhost:8080
+2026-02-03 18:57:29,991 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:29,991 - INFO - ClientHandler-38670 - server.py:132 - Client ('127.0.0.1', 38670) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 18:57:30,201 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 2, 'text': 'Client message at 2026-02-03 18:57:19', 'client_timestamp': '2026-02-03 18:57:19'}
+stamp': '2026-02-03 18:57:19'}
+2026-02-03 18:57:30,402 - INFO - MainThread - client.py:177 - Sent request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:30,402 - INFO - ClientHandler-38670 - server.py:132 - Client ('127.0.0.1', 38670) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 3}
+2026-02-03 18:57:32,403 - INFO - MainThread - client.py:189 - Closing client connection
+2026-02-03 18:57:32,403 - INFO - ClientHandler-38670 - server.py:169 - Closing connection with ('127.0.0.1', 38670)
+2026-02-03 18:57:32,404 - INFO - ClientHandler-38670 - server.py:60 - Connection closed by manager: ('127.0.0.1', 38670), reason: handler_exit
