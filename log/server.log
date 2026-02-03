@@ -1,0 +1,27 @@
+2026-02-03 17:23:49,464 - INFO - 27400 - __main__ 236 - args.config: E:\程培\pytest插件开发\pytest-viu-design\configs\config.json
+2026-02-03 17:23:49,468 - INFO - 27400 - __main__ 166 - Server started on localhost:8080 | Max connections: 100 | Heartbeat interval: 5s
+2026-02-03 17:24:00,515 - INFO - 27400 - __main__ 175 - Starting connection with ('127.0.0.1', 10906)
+2026-02-03 17:24:00,516 - INFO - 33956 - __main__ 54 - New client connection from ('127.0.0.1', 10906)
+2026-02-03 17:24:00,516 - INFO - 33956 - __main__ 75 - Client ('127.0.0.1', 10906) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 17:24:00,517 - INFO - 33956 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_time': 1770110640.5170457}
+2026-02-03 17:24:00,717 - INFO - 33956 - __main__ 75 - Client ('127.0.0.1', 10906) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 1, 'text': 'Client message at 2026-02-03 17:24:00', 'client_timestamp': '2026-02-03 17:24:00'}
+2026-02-03 17:24:00,718 - INFO - 33956 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_text': 'Client message at 2026-02-03 17:24:00 Server message at 2026-02-03 17:24:00', 'server_timestamp': '2026-02-03 17:24:00'}
+2026-02-03 17:24:00,918 - INFO - 33956 - __main__ 75 - Client ('127.0.0.1', 10906) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 1}
+2026-02-03 17:24:00,919 - INFO - 33956 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'healthy'}
+2026-02-03 17:24:11,120 - INFO - 33956 - __main__ 75 - Client ('127.0.0.1', 10906) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 17:24:11,120 - INFO - 33956 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_time': 1770110651.1206608}
+2026-02-03 17:24:11,120 - WARNING - 33956 - __main__ 59 - ('127.0.0.1', 10906) timeout
+2026-02-03 17:24:11,121 - INFO - 33956 - __main__ 94 - Closing connection with ('127.0.0.1', 10906)
+2026-02-03 17:24:11,322 - INFO - 27400 - __main__ 175 - Starting connection with ('127.0.0.1', 10907)
+2026-02-03 17:24:11,322 - INFO - 26600 - __main__ 54 - New client connection from ('127.0.0.1', 10907)
+2026-02-03 17:24:11,323 - INFO - 26600 - __main__ 75 - Client ('127.0.0.1', 10907) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 1, 'text': 'Client message at 2026-02-03 17:24:00', 'client_timestamp': '2026-02-03 17:24:00'}
+2026-02-03 17:24:11,323 - INFO - 26600 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'ok', 'server_text': 'Client message at 2026-02-03 17:24:00 Server message at 2026-02-03 17:24:11', 'server_timestamp': '2026-02-03 17:24:11'}
+2026-02-03 17:24:11,524 - INFO - 26600 - __main__ 75 - Client ('127.0.0.1', 10907) request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 1}
+2026-02-03 17:24:11,524 - INFO - 26600 - __main__ 141 - Server response: {'type': 'response', 'id': 1, 'status': 'healthy'}
+2026-02-03 17:24:21,725 - ERROR - 26600 - __main__ 92 - Client error ('127.0.0.1', 10907): [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+Traceback (most recent call last):
+  File "E:\程培\pytest插件开发\pytest-viu-design\src\ui\server.py", line 65, in handle_client
+    data = client_socket.recv(1024).decode('utf-8').strip()
+           ~~~~~~~~~~~~~~~~~~^^^^^^
+ConnectionResetError: [WinError 10054] 远程主机强迫关闭了一个现有的连接。
+2026-02-03 17:24:21,731 - INFO - 26600 - __main__ 94 - Closing connection with ('127.0.0.1', 10907)

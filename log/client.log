@@ -1,0 +1,34 @@
+2026-02-03 17:24:00,516 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 17:24:00,517 - INFO - 30260 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "ok", "server_time": 1770110640.5170457}
+2026-02-03 17:24:00,717 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 1, 'text': 'Client message at 2026-02-03 17:24:00', 'client_timestamp': '2026-02-03 17:24:00'}
+2026-02-03 17:24:00,718 - INFO - 30260 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "ok", "server_text": "Client message at 2026-02-03 17:24:00 Server message at 2026-02-03 17:24:00", "server_timestamp": "2026-02-03 17:24:00"}
+2026-02-03 17:24:00,918 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 1}
+2026-02-03 17:24:00,919 - INFO - 30260 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "healthy"}
+2026-02-03 17:24:11,119 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'get_status', 'id': 1}
+2026-02-03 17:24:11,121 - INFO - 30260 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "ok", "server_time": 1770110651.1206608}
+2026-02-03 17:24:11,121 - INFO - 30260 - __main__ 48 - Server response: {"type": "response", "id": 10001, "command": "disconnect"}
+2026-02-03 17:24:11,320 - WARNING - 28368 - __main__ 58 - Client is not connected
+2026-02-03 17:24:11,321 - WARNING - 28368 - __main__ 60 - Re-connect
+2026-02-03 17:24:11,322 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'echo_with_timestamp', 'id': 1, 'text': 'Client message at 2026-02-03 17:24:00', 'client_timestamp': '2026-02-03 17:24:00'}
+2026-02-03 17:24:11,323 - INFO - 28252 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "ok", "server_text": "Client message at 2026-02-03 17:24:00 Server message at 2026-02-03 17:24:11", "server_timestamp": "2026-02-03 17:24:11"}
+2026-02-03 17:24:11,523 - INFO - 28368 - __main__ 69 - Client request: {'type': 'request', 'token': 'your-secure-token-here', 'command': 'health_check', 'id': 1}
+2026-02-03 17:24:11,524 - INFO - 28252 - __main__ 48 - Server response: {"type": "response", "id": 1, "status": "healthy"}
+2026-02-03 17:24:21,725 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10053] 你的主机中的软件中止了一个已建立的连接。
+2026-02-03 17:24:21,725 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,725 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,725 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,725 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,726 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,727 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,727 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,727 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,728 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,728 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,728 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,728 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。
+2026-02-03 17:24:21,729 - ERROR - 28252 - __main__ 52 - Error handling response: [WinError 10038] 在一个非套接字上尝试了一个操作。

@@ -1,0 +1,7 @@
+{
+  "host": "localhost",
+  "port": 8080,
+  "max_connections": 100,
+  "heartbeat_interval": 5,
+  "token": "your-secure-token-here"
+}
