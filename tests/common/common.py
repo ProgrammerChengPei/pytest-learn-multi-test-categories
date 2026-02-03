@@ -153,3 +153,322 @@ def calculate_test_coverage(covered_items: List[str], total_items: List[str]) ->
     total_set = set(total_items)
     coverage = len(covered_set & total_set) / len(total_set) * 100
     return round(coverage, 2)
+
+
+# ============================================================================
+# 跨测试类型的公共辅助函数 / Cross-test-type common helper functions
+# ============================================================================
+
+import pytest  # 延迟导入避免循环依赖 / Delayed import to avoid circular dependency
+
+
+def send_and_receive(client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
+    """
+    Send request and wait for response (cross-test-type) / 发送请求并等待响应（跨测试类型）
+
+    Args:
+        client: Client instance / 客户端实例
+        request: Request dictionary / 请求字典
+        timeout: Timeout in seconds / 超时时间(秒)
+
+    Returns:
+        Response dictionary / 响应字典
+
+    Raises:
+        TimeoutError: If response not received within timeout / 如果超时未收到响应
+        ConnectionError: If send fails / 如果发送失败
+    """
+    import socket
+
+    start_time = time.time()
+    response_received = False
+    response_data = {}
+
+    # Send request
+    if not client.send(request):
+        raise ConnectionError("Failed to send request / 发送请求失败")
+
+    # Wait for response (polling approach)
+    while not response_received and time.time() - start_time < timeout:
+        time.sleep(0.05)
+
+    if not response_received:
+        raise TimeoutError(f"No response received within {timeout} seconds / {timeout}秒内未收到响应")
+
+    return response_data
+
+
+def validate_response_structure(response: Dict[str, Any], expected_fields: List[str]) -> bool:
+    """
+    Validate response structure (cross-test-type) / 验证响应结构（跨测试类型）
+
+    Args:
+        response: Response to validate / 待验证的响应
+        expected_fields: Expected field names / 期望的字段名
+
+    Returns:
+        True if valid, False otherwise / 有效返回True，否则返回False
+    """
+    return all(field in response for field in expected_fields)
+
+
+def validate_response_status(response: Dict[str, Any], expected_status: str) -> bool:
+    """
+    Validate response status (cross-test-type) / 验证响应状态（跨测试类型）
+
+    Args:
+        response: Response to validate / 待验证的响应
+        expected_status: Expected status value / 期望的状态值
+
+    Returns:
+        True if valid, False otherwise / 有效返回True，否则返回False
+    """
+    return response.get('status') == expected_status
+
+
+def compare_timestamps(server_timestamp: str, client_timestamp: float, tolerance: float = 60.0) -> bool:
+    """
+    Compare server and client timestamps (cross-test-type) / 比较服务器和客户端时间戳（跨测试类型）
+
+    Args:
+        server_timestamp: Server timestamp string / 服务器时间戳字符串
+        client_timestamp: Client timestamp in seconds / 客户端时间戳(秒)
+        tolerance: Allowed time difference in seconds / 允许的时间差(秒)
+
+    Returns:
+        True if within tolerance, False otherwise / 在容差范围内返回True，否则返回False
+    """
+    try:
+        server_time = time.mktime(time.strptime(server_timestamp, "%Y-%m-%d %H:%M:%S"))
+        return abs(server_time - client_timestamp) < tolerance
+    except (ValueError, TypeError):
+        return False
+
+
+def measure_request_latency(client, request: Dict[str, Any]) -> float:
+    """
+    Measure request latency (cross-test-type) / 测量请求延迟（跨测试类型）
+
+    Args:
+        client: Client instance / 客户端实例
+        request: Request to send / 要发送的请求
+
+    Returns:
+        Latency in seconds / 延迟(秒)
+    """
+    start_time = time.time()
+    try:
+        client.send(request)
+    except Exception:
+        pass
+    return time.time() - start_time
+
+
+def batch_send_requests(client, requests: List[Dict[str, Any]], delay: float = 0.1) -> List[Dict[str, Any]]:
+    """
+    Send multiple requests in batch (cross-test-type) / 批量发送多个请求（跨测试类型）
+
+    Args:
+        client: Client instance / 客户端实例
+        requests: List of requests / 请求列表
+        delay: Delay between requests in seconds / 请求之间的延迟(秒)
+
+    Returns:
+        List of responses / 响应列表
+    """
+    responses = []
+    for request in requests:
+        try:
+            success = client.send(request)
+            responses.append({"request_id": request.get('id'), "success": success})
+            time.sleep(delay)
+        except Exception as e:
+            responses.append({"request_id": request.get('id'), "error": str(e)})
+    return responses
+
+
+def calculate_success_rate(responses: List[Dict[str, Any]]) -> float:
+    """
+    Calculate success rate (cross-test-type) / 计算成功率（跨测试类型）
+
+    Args:
+        responses: List of responses / 响应列表
+
+    Returns:
+        Success rate as percentage / 成功率百分比
+    """
+    if not responses:
+        return 0.0
+    success_count = sum(1 for r in responses if 'error' not in r and r.get('success', r.get('status') in ['ok', 'healthy']))
+    return (success_count / len(responses)) * 100
+
+
+def test_data_integrity(client, test_data: str) -> bool:
+    """
+    Test data integrity (cross-test-type) / 测试数据完整性（跨测试类型）
+
+    Args:
+        client: Client instance / 客户端实例
+        test_data: Data to test integrity / 待测试完整性的数据
+
+    Returns:
+        True if test passes, False otherwise / 测试通过返回True，否则返回False
+    """
+    try:
+        # Calculate checksum before sending
+        original_checksum = hashlib.md5(test_data.encode()).hexdigest()
+
+        # Send data
+        request = {
+            "type": "request",
+            "command": "echo_with_timestamp",
+            "id": 1,
+            "text": test_data,
+            "token": client.token,
+            "checksum": original_checksum
+        }
+        client.send(request)
+        time.sleep(0.3)
+
+        return True
+    except Exception as e:
+        print(f"Data integrity test failed / 数据完整性测试失败: {e}")
+        return False
+
+
+def assert_response_success(response: Dict[str, Any], test_name: str = ""):
+    """
+    Assert response is successful (cross-test-type assertion helper) / 断言响应成功（跨测试类型断言助手）
+
+    Args:
+        response: Response to check / 待检查的响应
+        test_name: Test name for error message / 用于错误消息的测试名称
+
+    Raises:
+        AssertionError: If response indicates failure / 如果响应表示失败
+    """
+    error_msg = response.get('message', response.get('error', ''))
+    if response.get('type') == 'error' or 'error' in response:
+        prefix = f"{test_name}: " if test_name else ""
+        pytest.fail(f"{prefix}Response indicates error: {error_msg}")
+
+
+def assert_in_range(value: float, min_val: float, max_val: float, metric_name: str = "Value"):
+    """
+    Assert value is within range (cross-test-type assertion helper) / 断言值在范围内（跨测试类型断言助手）
+
+    Args:
+        value: Value to check / 待检查的值
+        min_val: Minimum value / 最小值
+        max_val: Maximum value / 最大值
+        metric_name: Metric name for error message / 用于错误消息的指标名称
+
+    Raises:
+        AssertionError: If value is out of range / 如果值超出范围
+    """
+    assert min_val <= value <= max_val, \
+        f"{metric_name} {value:.3f} is not in range [{min_val:.3f}, {max_val:.3f}]"
+
+
+# ============================================================================
+# 依赖管理装饰器 - 简化依赖声明 / Dependency management decorators - Simplified dependency declaration
+# ============================================================================
+
+def require_flash_test(test_func):
+    """
+    装饰器：要求刷写测试通过 / Decorator: Require flash test to pass
+
+    自动添加依赖标记和跳过检查，避免每个测试都写完整的 @pytest.mark.dependency
+    Automatically adds dependency markers and skip checks, avoiding writing complete
+    @pytest.mark.dependency for each test
+
+    用法示例 / Usage example:
+        @require_flash_test
+        def test_something(test_state):
+            # 测试代码 / Test code
+            pass
+
+    等价于 / Equivalent to:
+        @pytest.mark.dependency(depends=["test_flash_complete"])
+        def test_something(test_state, flash_test_passed):
+            if not flash_test_passed:
+                pytest.skip("Flash test not passed")
+            # 测试代码 / Test code
+            pass
+    """
+    @functools.wraps(test_func)
+    def wrapper(*args, **kwargs):
+        test_state = kwargs.get('test_state')
+        if test_state and not test_state.flash_test_passed:
+            pytest.skip("Flash test has not passed yet. Skipping dependent tests. / 刷写测试未通过，跳过依赖测试。")
+        return test_func(*args, **kwargs)
+
+    # 添加pytest标记
+    wrapper = pytest.mark.dependency(depends=["test_flash_complete"])(wrapper)
+    return wrapper
+
+
+def require_interface_test(test_func):
+    """
+    装饰器：要求接口测试通过 / Decorator: Require interface test to pass
+
+    用法示例 / Usage example:
+        @require_interface_test
+        def test_something(test_state):
+            # 测试代码 / Test code
+            pass
+    """
+    @functools.wraps(test_func)
+    def wrapper(*args, **kwargs):
+        test_state = kwargs.get('test_state')
+        if test_state and not test_state.interface_test_passed:
+            pytest.skip("Interface test has not passed yet. Skipping dependent tests. / 接口测试未通过，跳过依赖测试。")
+        return test_func(*args, **kwargs)
+
+    wrapper = pytest.mark.dependency(depends=["test_interface_complete"])(wrapper)
+    return wrapper
+
+
+def require_function_test(test_func):
+    """
+    装饰器：要求功能测试通过 / Decorator: Require function test to pass
+
+    用法示例 / Usage example:
+        @require_function_test
+        def test_something(test_state):
+            # 测试代码 / Test code
+            pass
+    """
+    @functools.wraps(test_func)
+    def wrapper(*args, **kwargs):
+        test_state = kwargs.get('test_state')
+        if test_state and not test_state.function_test_passed:
+            pytest.skip("Function test has not passed yet. Skipping dependent tests. / 功能测试未通过，跳过依赖测试。")
+        return test_func(*args, **kwargs)
+
+    wrapper = pytest.mark.dependency(depends=["test_function_complete"])(wrapper)
+    return wrapper
+
+
+# ============================================================================
+# 测试阶段标记装饰器 / Test phase marker decorators
+# ============================================================================
+
+def flash_test_marker(test_func):
+    """标记为刷写测试 / Mark as flash test"""
+    return pytest.mark.flash(test_func)
+
+
+def interface_test_marker(test_func):
+    """标记为接口测试 / Mark as interface test"""
+    return pytest.mark.interface(test_func)
+
+
+def function_test_marker(test_func):
+    """标记为功能测试 / Mark as function test"""
+    return pytest.mark.function(test_func)
+
+
+def performance_test_marker(test_func):
+    """标记为性能测试 / Mark as performance test"""
+    return pytest.mark.performance(test_func)
