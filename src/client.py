@@ -1,13 +1,14 @@
 """
-Test Client - Optimized Version
+Test client for the enhanced TCP server.
+Sends a valid request with correct message type and token.
 """
 import json
 import socket
 import threading
 import time
-from typing import Optional
+from typing import Any, Dict, Optional
 
-from log import load_config, logger
+from log import logger
 
 
 class Client:
@@ -21,24 +22,33 @@ class Client:
         self.lock = threading.Lock()
         self.reconnect_attempts = 0
         self.max_reconnect_attempts = 3
-        self.timeout = config.get('client_timeout', 10.0)
+        self.reconnect_delay = 2  # Initial delay in seconds
         
+        # Connect on initialization
         self._connect()
 
-    def _connect(self):
-        """建立连接"""
+    def _connect(self) -> bool:
+        """Establish connection to server."""
         with self.lock:
             if self.connected:
                 return True
                 
             try:
+                # Clean up any existing socket
+                if self.socket:
+                    try:
+                        self.socket.close()
+                    except:
+                        pass
+                
+                # Create new socket and connect
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.socket.settimeout(self.timeout)  # 连接超时
+                self.socket.settimeout(10.0)  # Connection timeout
                 self.socket.connect((self.host, self.port))
                 self.connected = True
                 self.reconnect_attempts = 0
                 
-                # 启动响应处理线程
+                # Start response handler thread
                 self.response_thread = threading.Thread(
                     target=self._handle_responses, 
                     name="ResponseHandler",
@@ -55,7 +65,7 @@ class Client:
                 return False
 
     def _cleanup(self):
-        """清理资源"""
+        """Clean up resources."""
         self.connected = False
         if self.socket:
             try:
@@ -65,50 +75,91 @@ class Client:
             self.socket = None
 
     def _handle_responses(self):
-        """处理服务器响应"""
+        """Thread function to handle server responses."""
+        buffer = b""
         while self.connected and self.socket:
             try:
-                data = self.socket.recv(1024)
+                # Set receive timeout to allow checking connection status
+                self.socket.settimeout(1.0)
                 
+                data = self.socket.recv(1024)
                 if not data:
                     logger.info("Server closed connection")
                     break
                     
-                response_str = data.decode('utf-8').strip()
-                if response_str:
-                    response = json.loads(response_str)
-                    logger.info(f"Server response: {response}")
-                    
-                    # 处理断开命令
-                    if response.get('command') == 'disconnect':
-                        logger.info(f"Server requested disconnect: {response.get('reason', 'unknown')}")
-                        break
+                buffer += data
+                
+                # Process complete messages (assuming newline-separated)
+                while b'\n' in buffer:
+                    line, buffer = buffer.split(b'\n', 1)
+                    if line:
+                        self._process_response(line)
                         
             except socket.timeout:
-                continue  # 正常超时，继续循环
-            except json.JSONDecodeError as e:
-                logger.error(f"Invalid JSON response: {e}")
+                continue  # Normal timeout, continue loop
             except (ConnectionResetError, BrokenPipeError) as e:
                 logger.info(f"Connection lost: {e}")
+                break
+            except OSError as e:
+                # Socket errors (connection closed)
+                logger.debug(f"Socket error in response handler: {e}")
                 break
             except Exception as e:
                 logger.error(f"Error handling response: {e}")
                 break
                 
-        # 连接断开
+        # Connection lost
         with self.lock:
+            logger.info("Response handler exiting")
             self._cleanup()
 
-    def send(self, request: dict) -> bool:
-        """发送请求"""
+    def _process_response(self, raw_data: bytes):
+        """Process a single response from server."""
+        try:
+            response_str = raw_data.decode('utf-8').strip()
+            if not response_str:
+                return
+                
+            logger.info(f"Server response: {response_str}")
+            
+            # Parse JSON response
+            try:
+                message = json.loads(response_str)
+                
+                # Handle disconnect command
+                if message.get('command') == "disconnect":
+                    logger.info(f"Server requested disconnect: {message.get('reason', 'unknown')}")
+                    with self.lock:
+                        self._cleanup()
+                    return
+                    
+            except json.JSONDecodeError:
+                # Handle non-JSON responses
+                if "timeout" in response_str.lower() or "disconnect" in response_str.lower():
+                    logger.info(f"Server sent disconnect message: {response_str}")
+                    with self.lock:
+                        self._cleanup()
+                else:
+                    logger.warning(f"Non-JSON response: {response_str}")
+                    
+        except UnicodeDecodeError:
+            logger.error(f"Failed to decode response: {raw_data}")
+        except Exception as e:
+            logger.error(f"Error processing response: {e}")
+
+    def send(self, request: Dict[str, Any]) -> bool:
+        """Send a request to the server."""
+        # Reconnect if not connected
         if not self.connected:
             if self.reconnect_attempts >= self.max_reconnect_attempts:
                 logger.error("Max reconnection attempts reached")
                 return False
                 
             self.reconnect_attempts += 1
-            logger.info(f"Attempting to reconnect ({self.reconnect_attempts}/{self.max_reconnect_attempts})")
+            delay = self.reconnect_delay * (2 ** (self.reconnect_attempts - 1))  # Exponential backoff
+            logger.info(f"Attempting to reconnect ({self.reconnect_attempts}/{self.max_reconnect_attempts}) in {delay}s")
             
+            time.sleep(delay)
             if not self._connect():
                 return False
         
@@ -117,7 +168,11 @@ class Client:
                 if not self.connected or not self.socket:
                     return False
                     
-                message = json.dumps(request)
+                # Add token to request if not present
+                if 'token' not in request:
+                    request['token'] = self.token
+                    
+                message = json.dumps(request) + '\n'  # Add newline for message separation
                 self.socket.sendall(message.encode('utf-8'))
                 logger.info(f"Sent request: {request}")
                 return True
@@ -129,12 +184,15 @@ class Client:
             return False
 
     def close(self):
-        """关闭连接"""
+        """Close the connection gracefully."""
         with self.lock:
+            logger.info("Closing client connection")
             self._cleanup()
 
 def send_requests(client: Client):
-    """发送测试请求"""
+    """Function to send requests to the server."""
+    # Create test requests
+    dt = time.strftime("%Y-%m-%d %H:%M:%S")
     requests = [
         {
             "type": "request",
@@ -147,43 +205,58 @@ def send_requests(client: Client):
             "token": client.token,
             "command": "echo_with_timestamp",
             "id": 2,
-            "text": f"Client message at {time.strftime('%Y-%m-%d %H:%M:%S')}"
+            "text": f"Client message at {dt}",
+            "client_timestamp": dt,
         },
         {
             "type": "request",
             "token": client.token,
             "command": "health_check",
             "id": 3
-        }
+        },
     ]
     
-    for i in range(2):  # 发送两轮
-        logger.info(f"Sending request batch {i+1}")
-        for request in requests:
-            if client.send(request):
-                time.sleep(0.5)  # 请求间隔
-            else:
+    # Send requests in batches
+    for batch_num in range(2):
+        logger.info(f"Sending request batch {batch_num + 1}")
+        
+        for i, request in enumerate(requests):
+            if not client.send(request):
                 logger.error("Failed to send request, stopping")
                 return
                 
-        if i < 1:  # 第一轮后等待
+            # Small delay between requests
+            if i < len(requests) - 1:
+                time.sleep(0.2)
+        
+        # Wait between batches (shorter wait to avoid timeout)
+        if batch_num < 1:
             logger.info("Waiting before next batch...")
-            time.sleep(15)
+            time.sleep(8)  # Shorter than server timeout
 
 if __name__ == "__main__":
     try:
-        config = load_config('configs/config.json')
+        # Load configuration
+        config_path = 'configs/config.json'
+        with open(config_path, 'r') as f:
+            config = json.load(f)
         
-        client = Client(
-            config.get('host', 'localhost'),
-            config.get('port', 8080),
-            config.get('token', 'your-secure-token-here')
-        )
+        host = config.get('host', 'localhost')
+        port = config.get('port', 8080)
+        token = config.get('token', 'your-secure-token-here')
         
+        # Create client
+        client = Client(host, port, token)
+        
+        # Send requests
         send_requests(client)
+        
+        # Keep the client running for a bit to receive responses
+        time.sleep(2)
         
     except Exception as e:
         logger.error(f"Client error: {e}")
     finally:
+        # Ensure client is closed
         if 'client' in locals():
             client.close()

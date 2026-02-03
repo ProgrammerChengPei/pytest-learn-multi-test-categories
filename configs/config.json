@@ -2,8 +2,8 @@
   "host": "localhost",
   "port": 8080,
   "max_connections": 100,
-  "heartbeat_interval": 7,
+  "heartbeat_interval": 5,
   "token": "your-secure-token-here",
-  "server_timeout": 7.0,
+  "server_timeout": 5.0,
   "client_timeout": 10.0
 }
