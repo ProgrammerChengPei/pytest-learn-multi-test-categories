@@ -1,17 +1,19 @@
 # Pytest-VIU-Design Test Framework / Pytest测试框架
 
-嵌入式Pytest测试框架，支持接口、功能、性能测试，自动依赖管理和Excel报告生成。
+嵌入式Pytest测试框架，支持接口、功能、性能测试，**完全基于钩子的自动化**依赖管理和Excel报告生成。
 
-Embedded Pytest test framework supporting interface, function, and performance testing with automatic dependency management and Excel report generation.
+Embedded Pytest test framework supporting interface, function, and performance testing with **hook-based automation** for dependency management and Excel report generation.
 
 ## Features / 特性
 
-- ✅ **Test Dependency Management / 测试依赖管理**: Flash → Interface → Function → Performance
-- ✅ **Excel Report Generation / Excel报告生成**: 自动生成详细的Excel测试报告
+- ✅ **Hook-based Automation / 钩子驱动自动化**: 所有报告和依赖管理通过钩子自动完成
+- ✅ **Zero Configuration / 零配置**: 测试代码只需添加marker，无需手动管理
+- ✅ **Auto Excel Report / 自动Excel报告**: 自动生成详细的Excel测试报告
+- ✅ **Auto Dependency / 自动依赖管理**: Flash → Interface → Function → Performance自动依赖
+- ✅ **Auto State Management / 自动状态管理**: 自动更新测试完成状态
+- ✅ **Auto Result Collection / 自动结果收集**: 自动收集测试结果到报告
 - ✅ **Multiple Test Types / 多种测试类型**: Flash刷写、Interface接口、Function功能、Performance性能
-- ✅ **Test Coverage / 测试覆盖率**: 支持代码覆盖率测试
-- ✅ **Parallel Execution / 并行执行**: 支持多线程并行测试
-- ✅ **HTML Report / HTML报告**: 生成HTML格式的测试报告
+- ✅ **Code Reduction / 代码减少**: 测试代码量减少约80%
 
 ## Project Structure / 项目结构
 
@@ -21,15 +23,16 @@ pytest-viu-design/
 │   ├── client.py                # TCP客户端 / TCP Client
 │   ├── server.py                # TCP服务器 / TCP Server
 │   ├── log.py                   # 日志配置 / Logging config
-│   ├── excel_report.py          # Excel报告生成器 / Excel report generator
-│   └── pytest_excel_report.py   # Pytest插件 / Pytest plugin
+│   └── excel_report.py          # Excel报告生成器 / Excel report generator
 ├── tests/                       # Test files / 测试文件
-│   ├── conftest.py             # 全局配置 / Global configuration
+│   ├── conftest.py             # 全局配置和钩子 / Global config and hooks
 │   ├── common/                  # 公共工具 / Common utilities
 │   ├── flash_tests/            # 刷写测试 / Flash tests
 │   ├── interface_tests/        # 接口测试 / Interface tests
 │   ├── function_tests/         # 功能测试 / Function tests
 │   └── performance_tests/      # 性能测试 / Performance tests
+├── reports/                     # 测试报告目录 / Test reports directory
+│   └── test_report_YYYYMMDD_HHMMSS.xlsx
 ├── configs/                    # 配置文件 / Configuration files
 ├── docs/                       # 文档 / Documentation
 └── requirements.txt            # Python依赖 / Python dependencies
@@ -37,38 +40,56 @@ pytest-viu-design/
 
 ## Test Dependency Chain / 测试依赖链
 
-测试严格按照以下顺序执行（每个阶段的测试依赖于前一阶段通过）：
+测试严格按照以下顺序执行（每个阶段的测试依赖于前一阶段通过），**完全由钩子自动管理**：
 
-Tests are executed in strict order (each phase depends on the previous phase passing):
+Tests are executed in strict order (each phase depends on the previous phase passing), **fully automated by hooks**:
 
 ```
 Flash Test (刷写测试)
-    ↓
+    ↓ (自动依赖 / Auto dependency)
 Interface Test (接口测试)
-    ↓
+    ↓ (自动依赖 / Auto dependency)
 Function Test (功能测试)
-    ↓
+    ↓ (自动依赖 / Auto dependency)
 Performance Test (性能测试)
 ```
 
-### Dependency Implementation / 依赖实现方式
+### Hook-based Automation / 基于钩子的自动化
 
-使用 **pytest-dependency** 插件实现测试依赖：
+**传统方式需要在每个测试上添加装饰器：**
 
 ```python
-@pytest.mark.flash
-@pytest.mark.dependency(name="test_flash_complete")
-def test_flash_complete(test_state):
-    """Flash test / 刷写测试"""
-    test_state.mark_flash_passed()
-
+# ❌ 传统方式 - 需要手动添加依赖
 @pytest.mark.interface
-@pytest.mark.dependency(name="test_interface_test", depends=["test_flash_complete"])
-def test_interface_test(test_state, flash_test_passed):
-    """Interface test depends on flash / 接口测试依赖刷写"""
-    if not flash_test_passed:
-        pytest.skip("Flash test has not passed yet")
+@pytest.mark.dependency(depends=["test_flash_complete"])
+def test_interface_test():
+    # 需要手动管理状态
+    test_state.record_result(...)
+    test_state.mark_interface_passed()
 ```
+
+**钩子方式只需添加marker：**
+
+```python
+# ✅ 钩子方式 - 自动管理所有依赖和报告
+@pytest.mark.interface
+def test_interface_test():
+    # 无需任何手动管理！
+    assert api_call().success
+```
+
+### Hooks Used / 使用的钩子
+
+| 钩子 / Hook | 功能 / Function |
+|------------|---------------|
+| `pytest_sessionstart` | 初始化Excel报告生成器 |
+| `pytest_runtest_logreport` | 自动收集测试结果 |
+| `pytest_runtest_makereport` | 自动更新测试状态 |
+| `pytest_runtest_setup` | 自动检查依赖 |
+| `pytest_collection_modifyitems` | 自动添加依赖标记 |
+| `pytest_sessionfinish` | 自动生成Excel报告 |
+
+详细信息请参考：[docs/钩子驱动的全自动化测试框架.md](docs/钩子驱动的全自动化测试框架.md)
 
 ## Installation / 安装
 
@@ -155,20 +176,35 @@ pytest tests/ -n 4
 
 ## Test Artifacts / 测试产物
 
-测试运行后会生成以下文件：
+测试运行后会自动生成以下文件：
 
-The following files will be generated after test run:
+The following files will be automatically generated after test run:
 
 ```
-test_artifacts/
-├── pytest.log                    # Pytest日志 / Pytest log
-├── pytest_report.html           # HTML报告 / HTML report
-├── pytest_report.xlsx           # Excel报告 / Excel report
-├── flash_test_result.json        # 刷写测试结果 / Flash test result
-├── interface_test_result.json   # 接口测试结果 / Interface test result
-├── function_test_result.json    # 功能测试结果 / Function test result
-└── performance_test_result.json  # 性能测试结果 / Performance test result
+reports/
+└── test_report_YYYYMMDD_HHMMSS.xlsx    # Excel报告 / Excel report (自动生成)
 ```
+
+## Excel Report Structure / Excel报告结构
+
+生成的Excel报告包含以下工作表：
+
+The generated Excel report contains the following sheets:
+
+1. **测试汇总 / Summary** - 整体测试统计信息 / Overall test statistics
+2. **刷写测试 / Flash** - 刷写测试详细结果 / Flash test details
+3. **接口测试 / Interface** - 接口测试详细结果 / Interface test details
+4. **功能测试 / Function** - 功能测试详细结果 / Function test details
+5. **性能测试 / Performance** - 性能测试详细结果 / Performance test details
+
+### Report Features / 报告特性
+
+- 📊 统计图表 / Statistical charts
+- 🎨 彩色状态标记 / Color-coded status markers (绿色=通过，红色=失败)
+- ⏱️ 耗时统计 / Duration statistics
+- ✅ 通过/失败统计 / Pass/Fail statistics
+- 🔍 详细的错误信息 / Detailed error messages
+- 📁 带时间戳的文件名 / Timestamped filename
 
 ## Excel Report Structure / Excel报告结构
 
@@ -268,12 +304,10 @@ Edit `configs/config.json`:
 ```python
 import pytest
 
-class TestFlash:
-    @pytest.mark.flash
-    @pytest.mark.dependency(name="test_new_flash_test", depends=["test_flash_complete"])
-    def test_new_flash_test(self, test_state, test_client):
-        """Your flash test here / 你的刷写测试"""
-        assert True
+@pytest.mark.flash
+def test_new_flash_test():
+    """Flash test / 刷写测试 - 自动依赖管理，自动报告"""
+    assert flash_success
 ```
 
 ### 2. Interface Test Example / 接口测试示例
@@ -281,12 +315,10 @@ class TestFlash:
 ```python
 import pytest
 
-class TestInterface:
-    @pytest.mark.interface
-    @pytest.mark.dependency(name="test_new_interface", depends=["test_interface_complete"])
-    def test_new_interface(self, test_state, test_client):
-        """Your interface test here / 你的接口测试"""
-        assert True
+@pytest.mark.interface
+def test_new_interface():
+    """Interface test / 接口测试 - 自动依赖flash测试，自动报告"""
+    assert api_login().success
 ```
 
 ### 3. Function Test Example / 功能测试示例
@@ -294,25 +326,53 @@ class TestInterface:
 ```python
 import pytest
 
-class TestFunction:
-    @pytest.mark.function
-    @pytest.mark.dependency(name="test_new_function", depends=["test_function_complete"])
-    def test_new_function(self, test_state, test_client):
-        """Your function test here / 你的功能测试"""
-        assert True
+@pytest.mark.function
+def test_new_function():
+    """Function test / 功能测试 - 自动依赖interface测试，自动报告"""
+    assert user_registration().success
 ```
 
 ### 4. Performance Test Example / 性能测试示例
 
 ```python
 import pytest
+import time
 
-class TestPerformance:
-    @pytest.mark.performance
-    @pytest.mark.dependency(name="test_new_performance", depends=["test_performance_complete"])
-    def test_new_performance(self, test_state, test_client):
-        """Your performance test here / 你的性能测试"""
-        assert True
+@pytest.mark.performance
+def test_new_performance(request):
+    """Performance test / 性能测试 - 自动依赖function测试，自动报告"""
+    start = time.time()
+    result = api_call()
+    duration = time.time() - start
+
+    assert duration < 0.1
+
+    # 记录性能指标（会自动添加到Excel报告）
+    request.node.user_properties.append(('metric', 'Response Time'))
+    request.node.user_properties.append(('value', f'{duration:.3f}s'))
+```
+
+### Code Comparison / 代码对比
+
+**传统方式（80%代码被移除）：**
+```python
+# ❌ 需要5行以上的样板代码
+@pytest.mark.interface
+@pytest.mark.dependency(name="test_api_login", depends=["test_flash_complete"])
+def test_api_login(test_state):
+    result = api_login()
+    assert result.success
+    test_state.record_result("test_api_login", result)
+    test_state.mark_interface_passed()
+    # 还有更多报告相关代码...
+```
+
+**钩子方式：**
+```python
+# ✅ 只需2行核心代码
+@pytest.mark.interface
+def test_api_login():
+    assert api_login().success
 ```
 
 ## Troubleshooting / 故障排除

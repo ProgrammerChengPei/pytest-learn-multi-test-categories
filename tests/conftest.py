@@ -9,6 +9,7 @@ import sys
 import json
 import time
 from pathlib import Path
+from datetime import datetime
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent
@@ -118,6 +119,177 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "function: Function tests / 功能测试")
     config.addinivalue_line("markers", "performance: Performance tests / 性能测试")
     config.addinivalue_line("markers", "dependency: Mark test dependencies / 测试依赖标记")
+
+
+# ============================================================================
+# 自动Excel报告生成钩子 / Automatic Excel Report Generation Hooks
+# ============================================================================
+
+def pytest_sessionstart(session):
+    """
+    测试会话开始时初始化报告生成器 / Initialize report generator at session start
+
+    使用钩子自动初始化Excel报告生成器，无需手动调用
+    Use hooks to automatically initialize Excel report generator without manual calls
+
+    Args:
+        session: Pytest session object / Pytest会话对象
+    """
+    from src.excel_report import ExcelReportGenerator
+
+    # 创建报告输出目录 / Create report output directory
+    output_dir = project_root / "reports"
+    output_dir.mkdir(exist_ok=True)
+
+    # 初始化报告生成器并存储在session中 / Initialize report generator and store in session
+    generator = ExcelReportGenerator(output_dir)
+    generator.start()
+
+    # 存储到session对象中 / Store to session object
+    session.config.excel_report_generator = generator
+    session.config.session_start_time = time.time()
+
+    print(f"\n{'='*70}")
+    print(f"测试会话开始 / Test Session Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"{'='*70}")
+
+
+def pytest_runtest_logreport(report):
+    """
+    自动收集每个测试的结果 / Automatically collect results for each test
+
+    使用钩子自动收集测试结果，无需手动添加报告代码
+    Use hooks to automatically collect test results without manual reporting code
+
+    Args:
+        report: Test report object / 测试报告对象
+    """
+    # 只在测试完成时收集结果 / Collect results only when test is complete
+    if report.when == 'call':
+        generator = report.session.config.excel_report_generator
+
+        # 从测试节点获取测试类别 / Get test category from test node
+        test_node = report.node
+        test_type = None
+        for marker_name in ['flash', 'interface', 'function', 'performance']:
+            if test_node.get_closest_marker(marker_name):
+                test_type = marker_name
+                break
+
+        if test_type:
+            # 构建测试结果字典 / Build test result dictionary
+            test_result = {
+                'name': report.node.name,
+                'category': test_type,
+                'status': 'passed' if report.passed else 'failed' if report.failed else 'skipped',
+                'duration': report.duration,
+                'message': str(report.longrepr) if not report.passed else '',
+                'file': str(test_node.fspath),
+                'line': test_node.lineno
+            }
+
+            # 性能测试额外信息 / Performance test additional info
+            if test_type == 'performance':
+                # 尝试从report中提取性能指标 / Try to extract performance metrics from report
+                if hasattr(report, 'user_properties'):
+                    for key, value in report.user_properties:
+                        if key == 'metric':
+                            test_result['metric'] = value
+                        elif key == 'value':
+                            test_result['value'] = value
+
+            # 添加到报告生成器 / Add to report generator
+            generator.add_test_result(test_result)
+
+            # 打印测试结果摘要 / Print test result summary
+            status_icon = "✓" if report.passed else "✗" if report.failed else "⊘"
+            print(f"  [{status_icon}] {test_type.upper()}: {report.node.name} - {test_result['status']} ({report.duration:.3f}s)")
+
+
+def pytest_runtest_makereport(item, call):
+    """
+    自动标记测试完成状态 / Automatically mark test completion status
+
+    使用钩子自动更新测试状态管理器，无需手动调用mark_*_passed()
+    Use hooks to automatically update test state manager without manual mark_*_passed() calls
+
+    Args:
+        item: Test item / 测试项
+        call: Test call object / 测试调用对象
+
+    Returns:
+        Modified report / 修改后的报告
+    """
+    report = call.result if call else None
+
+    if report and report.when == 'call' and report.passed:
+        test_state = None
+
+        # 获取test_state fixture / Get test_state fixture
+        try:
+            if hasattr(item, '_fixtureinfo'):
+                fixturedef = item._fixtureinfo.name2fixturedefs.get('test_state')
+                if fixturedef:
+                    test_state = fixturedef[0].cached_result
+                    if test_state:
+                        test_state = test_state[0]
+        except Exception:
+            pass
+
+        # 自动更新测试完成状态 / Automatically update test completion status
+        if test_state:
+            if item.get_closest_marker('flash'):
+                test_state.mark_flash_passed()
+            elif item.get_closest_marker('interface'):
+                test_state.mark_interface_passed()
+            elif item.get_closest_marker('function'):
+                test_state.mark_function_passed()
+
+    return report
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """
+    测试会话结束时自动生成报告 / Automatically generate report at session end
+
+    使用钩子自动生成Excel报告，无需手动调用
+    Use hooks to automatically generate Excel report without manual calls
+
+    Args:
+        session: Pytest session object / Pytest会话对象
+        exitstatus: Exit status code / 退出状态码
+    """
+    generator = getattr(session.config, 'excel_report_generator', None)
+    session_start_time = getattr(session.config, 'session_start_time', None)
+
+    if generator and session_start_time:
+        generator.stop()
+
+        # 生成带时间戳的报告文件名 / Generate timestamped report filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"test_report_{timestamp}.xlsx"
+
+        print(f"\n{'='*70}")
+        print(f"生成测试报告 / Generating Test Report...")
+        print(f"{'='*70}")
+
+        # 生成报告 / Generate report
+        report_path = generator.generate_report(filename)
+
+        # 打印统计信息 / Print statistics
+        total_tests = len(generator.test_results)
+        passed_tests = len([r for r in generator.test_results if r.get('status') == 'passed'])
+        failed_tests = len([r for r in generator.test_results if r.get('status') == 'failed'])
+        skipped_tests = len([r for r in generator.test_results if r.get('status') == 'skipped'])
+
+        print(f"\n测试统计 / Test Statistics:")
+        print(f"  总数 / Total:     {total_tests}")
+        print(f"  通过 / Passed:    {passed_tests} ({passed_tests/total_tests*100:.1f}%)" if total_tests > 0 else f"  通过 / Passed:    {passed_tests}")
+        print(f"  失败 / Failed:    {failed_tests} ({failed_tests/total_tests*100:.1f}%)" if total_tests > 0 else f"  失败 / Failed:    {failed_tests}")
+        print(f"  跳过 / Skipped:   {skipped_tests}")
+        print(f"  耗时 / Duration:  {generator.end_time - session_start_time:.2f}s")
+        print(f"\n报告路径 / Report Path: {report_path}")
+        print(f"{'='*70}\n")
 
 
 # ============================================================================
