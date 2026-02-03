@@ -129,20 +129,19 @@ def pytest_sessionstart(session):
     """
     测试会话开始时初始化报告生成器 / Initialize report generator at session start
 
-    使用钩子自动初始化Excel报告生成器，无需手动调用
-    Use hooks to automatically initialize Excel report generator without manual calls
+    使用基于模板的Excel报告生成器，通过JSON配置映射数据到模板
+    Use template-based Excel report generator with JSON config for data mapping
 
     Args:
         session: Pytest session object / Pytest会话对象
     """
-    from src.excel_report import ExcelReportGenerator
+    from src.template_based_report import TemplateBasedReportGenerator
 
-    # 创建报告输出目录 / Create report output directory
-    output_dir = project_root / "reports"
-    output_dir.mkdir(exist_ok=True)
+    # 报告配置文件路径 / Report config file path
+    config_path = project_root / "configs" / "report_config.json"
 
-    # 初始化报告生成器并存储在session中 / Initialize report generator and store in session
-    generator = ExcelReportGenerator(output_dir)
+    # 初始化基于模板的报告生成器 / Initialize template-based report generator
+    generator = TemplateBasedReportGenerator(config_path)
     generator.start()
 
     # 存储到session对象中 / Store to session object
@@ -151,6 +150,8 @@ def pytest_sessionstart(session):
 
     print(f"\n{'='*70}")
     print(f"测试会话开始 / Test Session Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"报告配置 / Report Config: {config_path}")
+    print(f"模板文件 / Template: {generator.config['template']}")
     print(f"{'='*70}")
 
 

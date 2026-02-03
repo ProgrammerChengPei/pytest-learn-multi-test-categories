@@ -23,7 +23,8 @@ pytest-viu-design/
 │   ├── client.py                # TCP客户端 / TCP Client
 │   ├── server.py                # TCP服务器 / TCP Server
 │   ├── log.py                   # 日志配置 / Logging config
-│   └── excel_report.py          # Excel报告生成器 / Excel report generator
+│   ├── excel_report.py          # Excel报告生成器 / Excel report generator
+│   └── template_based_report.py # 基于模板的报告生成器 / Template-based report generator
 ├── tests/                       # Test files / 测试文件
 │   ├── conftest.py             # 全局配置和钩子 / Global config and hooks
 │   ├── common/                  # 公共工具 / Common utilities
@@ -31,11 +32,17 @@ pytest-viu-design/
 │   ├── interface_tests/        # 接口测试 / Interface tests
 │   ├── function_tests/         # 功能测试 / Function tests
 │   └── performance_tests/      # 性能测试 / Performance tests
-├── reports/                     # 测试报告目录 / Test reports directory
+├── reports/                     # 测试报告目录 / Test reports directory (自动生成)
 │   └── test_report_YYYYMMDD_HHMMSS.xlsx
-├── configs/                    # 配置文件 / Configuration files
-├── docs/                       # 文档 / Documentation
-└── requirements.txt            # Python依赖 / Python dependencies
+├── templates/                   # Excel模板目录 / Excel templates directory
+│   └── test_report_template.xlsx  # Excel报告模板 / Excel report template
+├── configs/                     # 配置文件 / Configuration files
+│   ├── config.json             # 测试配置 / Test configuration
+│   └── report_config.json      # 报告配置 / Report configuration
+├── scripts/                     # 脚本文件 / Script files
+│   └── create_template.py      # 模板生成脚本 / Template generator script
+├── docs/                        # 文档 / Documentation
+└── requirements.txt             # Python依赖 / Python dependencies
 ```
 
 ## Test Dependency Chain / 测试依赖链
@@ -183,28 +190,60 @@ The following files will be automatically generated after test run:
 ```
 reports/
 └── test_report_YYYYMMDD_HHMMSS.xlsx    # Excel报告 / Excel report (自动生成)
+
+templates/
+└── test_report_template.xlsx           # Excel模板 / Excel template
+
+configs/
+└── report_config.json                   # 报告配置 / Report configuration
 ```
 
-## Excel Report Structure / Excel报告结构
+## Excel Report Template Configuration / Excel报告模板配置
+
+### Quick Start / 快速开始
+
+```bash
+# 1. 生成默认Excel模板
+python scripts/create_template.py
+
+# 2. 运行测试（自动生成报告）
+pytest tests/ -v
+
+# 3. 报告生成在：reports/test_report_YYYYMMDD_HHMMSS.xlsx
+```
+
+### Customization / 自定义
+
+**方式1: 直接编辑Excel模板**
+- 打开 `templates/test_report_template.xlsx`
+- 自定义样式、布局、表头
+- JSON配置自动映射数据到对应单元格
+
+**方式2: 修改JSON配置**
+- 编辑 `configs/report_config.json`
+- 定义数据源到单元格的映射关系
+- 支持条件样式和格式化规则
+
+详细配置指南参见：[docs/基于模板的Excel报告配置指南.md](docs/基于模板的Excel报告配置指南.md)
+
+### Excel Report Structure / Excel报告结构
 
 生成的Excel报告包含以下工作表：
 
 The generated Excel report contains the following sheets:
 
 1. **测试汇总 / Summary** - 整体测试统计信息 / Overall test statistics
-2. **刷写测试 / Flash** - 刷写测试详细结果 / Flash test details
-3. **接口测试 / Interface** - 接口测试详细结果 / Interface test details
-4. **功能测试 / Function** - 功能测试详细结果 / Function test details
-5. **性能测试 / Performance** - 性能测试详细结果 / Performance test details
+2. **测试详情 / Test Details** - 所有测试的详细结果 / All test details
 
 ### Report Features / 报告特性
 
-- 📊 统计图表 / Statistical charts
+- 📊 可自定义模板 / Customizable template
 - 🎨 彩色状态标记 / Color-coded status markers (绿色=通过，红色=失败)
 - ⏱️ 耗时统计 / Duration statistics
 - ✅ 通过/失败统计 / Pass/Fail statistics
 - 🔍 详细的错误信息 / Detailed error messages
 - 📁 带时间戳的文件名 / Timestamped filename
+- ⚙️ JSON配置驱动 / JSON configuration driven
 
 ## Excel Report Structure / Excel报告结构
 
