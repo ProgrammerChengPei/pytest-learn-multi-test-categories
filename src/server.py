@@ -1,5 +1,5 @@
 """
-Enhanced TCP Server for pytest-viu-design plugin.
+Enhanced TCP Server for pytest-learn-multi-test-categories plugin.
 Implements JSON-RPC style protocol with connection management, security, and logging.
 """
 import argparse
@@ -337,7 +337,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
 
 def main():
     """Main entry point with command-line argument support."""
-    parser = argparse.ArgumentParser(description='Enhanced TCP Server for pytest-viu-design')
+    parser = argparse.ArgumentParser(description='Enhanced TCP Server for pytest-learn-multi-test-categories')
     parser.add_argument('--host', help='Host address to bind (default: localhost)')
     parser.add_argument('--port', type=int, help='Port number to listen (default: 8080)')
     parser.add_argument('--config', default='configs/config.json', help='Path to configuration file')

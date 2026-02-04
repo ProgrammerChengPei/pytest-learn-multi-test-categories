@@ -1,8 +1,7 @@
 """
-演示脚本：展示如何使用pytest-viu-design框架
-Demo Script: How to use the pytest-viu-design framework
+演示脚本：展示如何使用pytest-learn-multi-test-categories框架
+Demo Script: How to use the pytest-learn-multi-test-categories framework
 """
-import os
 import subprocess
 from pathlib import Path
 
@@ -27,7 +26,7 @@ def main():
     project_root = Path(__file__).parent
 
     print("\n" + "="*70)
-    print("Pytest-VIU-Design 框架演示 / Pytest-VIU-Design Framework Demo")
+    print("pytest-learn-multi-test-categories 框架演示 / pytest-learn-multi-test-categories Framework Demo")
     print("="*70)
 
     # 步骤1：检查依赖 / Step 1: Check dependencies

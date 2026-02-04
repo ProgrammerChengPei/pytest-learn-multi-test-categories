@@ -1,4 +1,4 @@
-# Pytest-VIU-Design Test Framework / Pytest测试框架
+# pytest-learn-multi-test-categories Test Framework / Pytest测试框架
 
 嵌入式Pytest测试框架，支持接口、功能、性能测试，**完全基于钩子的自动化**依赖管理和Excel报告生成。
 
@@ -18,7 +18,7 @@ Embedded Pytest test framework supporting interface, function, and performance t
 ## Project Structure / 项目结构
 
 ```
-pytest-viu-design/
+pytest-learn-multi-test-categories/
 ├── src/                          # Source code / 源代码
 │   ├── client.py                # TCP客户端 / TCP Client
 │   ├── server.py                # TCP服务器 / TCP Server
@@ -103,7 +103,7 @@ def test_interface_test():
 ```bash
 # Clone repository / 克隆仓库
 git clone <repository-url>
-cd pytest-viu-design
+cd pytest-learn-multi-test-categories
 
 # Install dependencies / 安装依赖
 pip install -r requirements.txt

@@ -73,7 +73,7 @@ graph TB
 ### 目录结构 / Directory Structure
 
 ```
-pytest-viu-design/
+pytest-learn-multi-test-categories/
 ├── src/                                    # 源代码 / Source Code
 │   ├── client.py                          # TCP客户端 / TCP Client
 │   ├── server.py                          # TCP服务器 / TCP Server
@@ -1268,4 +1268,4 @@ export TEST_TOKEN=test-token-123
 
 **文档版本 / Document Version**: 1.0
 **最后更新 / Last Updated**: 2024-02-03
-**维护者 / Maintainer**: Pytest-VIU-Design Team
+**维护者 / Maintainer**: pytest-learn-multi-test-categories Team

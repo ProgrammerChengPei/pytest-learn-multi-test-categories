@@ -2,9 +2,9 @@
 验证脚本：检查所有修复是否生效
 Verify Script: Check if all fixes are working
 """
-import sys
-from pathlib import Path
 import json
+from pathlib import Path
+
 
 def check_config_files():
     """检查配置文件是否正确 / Check if config files are correct"""
@@ -76,8 +76,8 @@ def check_template():
         print(f"   文件大小 / File size: {template_path.stat().st_size / 1024:.2f} KB")
     else:
         print(f"❌ Excel模板不存在 / Excel template not found: {template_path}")
-        print(f"   请运行: python scripts/create_template.py")
-        print(f"   Please run: python scripts/create_template.py")
+        print("   请运行: python scripts/create_template.py")
+        print("   Please run: python scripts/create_template.py")
 
 
 def check_codebase():
@@ -107,9 +107,9 @@ def check_codebase():
         # 检查是否支持fallback
         # Check if fallback is supported
         if "fallback = col_config.get('fallback')" in content:
-            print(f"✅ 支持 fallback 字段 / Supports fallback field")
+            print("✅ 支持 fallback 字段 / Supports fallback field")
         else:
-            print(f"❌ 不支持 fallback 字段 / Doesn't support fallback field")
+            print("❌ 不支持 fallback 字段 / Doesn't support fallback field")
     else:
         print(f"❌ 文件不存在 / File not found: {report_file}")
 
@@ -121,9 +121,9 @@ def check_codebase():
             content = f.read()
 
         if "docstring = test_node.obj.__doc__.strip()" in content:
-            print(f"✅ conftest.py 正确提取 docstring / conftest.py correctly extracts docstring")
+            print("✅ conftest.py 正确提取 docstring / conftest.py correctly extracts docstring")
         else:
-            print(f"❌ conftest.py 未正确提取 docstring / conftest.py doesn't correctly extract docstring")
+            print("❌ conftest.py 未正确提取 docstring / conftest.py doesn't correctly extract docstring")
     else:
         print(f"❌ 文件不存在 / File not found: {conftest_file}")
 
@@ -156,7 +156,7 @@ def print_next_steps():
 def main():
     """主函数 / Main function"""
     print("\n" + "="*70)
-    print("Pytest-VIU-Design 功能验证 / Pytest-VIU-Design Feature Verification")
+    print("pytest-learn-multi-test-categories 功能验证 / pytest-learn-multi-test-categories Feature Verification")
     print("="*70)
 
     check_config_files()
@@ -170,4 +170,5 @@ def main():
 
 
 if __name__ == "__main__":
+    main()
     main()
