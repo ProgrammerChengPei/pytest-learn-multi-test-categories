@@ -262,7 +262,7 @@ class TestFlash:
     @pytest.mark.dependency(name="test_flash_connection")
     def test_flash_connection(self, test_state, test_config):
         """测试刷写连接 / Test flash connection"""
-        from client import Client
+        from src.client import Client
 
         client = Client(
             test_config.get('host', 'localhost'),

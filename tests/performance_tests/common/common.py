@@ -1,11 +1,12 @@
 """
 Performance Test Common Utilities / 性能测试公共工具
 """
-import time
-import threading
 import statistics
-from typing import Dict, Any, List, Tuple
-from client import Client
+import threading
+import time
+from typing import Any, Dict, List
+
+from src.client import Client
 
 
 class PerformanceTestResult:
@@ -293,4 +294,5 @@ def run_performance_suite(client: Client) -> List[PerformanceTestResult]:
     )
     results.append(result)
 
+    return results
     return results

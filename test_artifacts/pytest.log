@@ -1,7 +1,15 @@
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_api_login because it depends on test_flash_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_api_logout because it depends on test_flash_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_get_status because it depends on test_flash_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_without_chinese_name because it depends on test_flash_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_user_registration because it depends on test_interface_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_user_login because it depends on test_interface_complete
-2026-02-03 20:36:03 [    INFO] pytest_dependency.py:100 - skip test_response_time because it depends on test_function_complete
+2026-02-04 11:54:24 [    INFO] client.py:67 - Connected to localhost:8080
+2026-02-04 11:54:24 [    INFO] client.py:185 - Sent request: {'type': 'request', 'command': 'get_status', 'id': 1, 'token': 'your-secure-token-here'}
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection
+2026-02-04 11:54:24 [    INFO] client.py:121 - Response handler exiting
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_get_status because it depends on test_flash_complete
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_health_check because it depends on test_interface_get_status
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_echo because it depends on test_interface_health_check
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_batch_requests because it depends on test_interface_echo
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_latency because it depends on test_interface_batch_requests
+2026-02-04 11:54:24 [    INFO] pytest_dependency.py:100 - skip test_interface_complete because it depends on test_interface_latency
+2026-02-04 11:54:24 [    INFO] client.py:197 - Closing client connection

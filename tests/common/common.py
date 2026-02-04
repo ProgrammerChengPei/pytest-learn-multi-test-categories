@@ -2,12 +2,14 @@
 Common Test Utilities / 测试公共工具模块
 跨测试类型的公共辅助函数 / Cross-test-type common helper functions
 """
-import time
-import json
-import hashlib
-from typing import Dict, Any, List, Optional, Callable
-from pathlib import Path
 import functools
+import hashlib
+import json
+import time
+from pathlib import Path
+from typing import Any, Dict, List
+
+from src.client import Client
 
 
 class TestResult:
@@ -162,7 +164,7 @@ def calculate_test_coverage(covered_items: List[str], total_items: List[str]) ->
 import pytest  # 延迟导入避免循环依赖 / Delayed import to avoid circular dependency
 
 
-def send_and_receive(client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
+def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
     """
     Send request and wait for response (cross-test-type) / 发送请求并等待响应（跨测试类型）
 
@@ -178,7 +180,6 @@ def send_and_receive(client, request: Dict[str, Any], timeout: float = 5.0) -> D
         TimeoutError: If response not received within timeout / 如果超时未收到响应
         ConnectionError: If send fails / 如果发送失败
     """
-    import socket
 
     start_time = time.time()
     response_received = False
@@ -303,7 +304,7 @@ def calculate_success_rate(responses: List[Dict[str, Any]]) -> float:
     return (success_count / len(responses)) * 100
 
 
-def test_data_integrity(client, test_data: str) -> bool:
+def test_data_integrity(client: Client, test_data: str) -> bool:
     """
     Test data integrity (cross-test-type) / 测试数据完整性（跨测试类型）
 
@@ -471,4 +472,5 @@ def function_test_marker(test_func):
 
 def performance_test_marker(test_func):
     """标记为性能测试 / Mark as performance test"""
+    return pytest.mark.performance(test_func)
     return pytest.mark.performance(test_func)

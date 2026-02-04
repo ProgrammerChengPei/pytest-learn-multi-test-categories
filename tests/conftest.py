@@ -2,14 +2,14 @@
 Pytest Configuration File / Pytest 配置文件
 全局测试配置和fixture定义
 """
-import pytest
-from typing import Dict, Any
-import os
-import sys
 import json
+import sys
 import time
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict
+
+import pytest
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent
@@ -21,6 +21,23 @@ _excel_report_generator = None
 
 # 存储当前测试item / Store current test item
 _current_test_item = None
+
+@pytest.fixture(scope="session")
+def test_client(test_config):
+    """
+    Create test client instance / 创建测试客户端实例
+
+    Note: This fixture will only be valid if flash test has passed
+    注意: 仅在刷写测试通过后此fixture才有效
+    """
+    from src.client import Client
+    client = Client(
+        test_config.get('host', 'localhost'),
+        test_config.get('port', 8080),
+        test_config.get('token', 'your-secure-token-here')
+    )
+    yield client
+    client.close()
 
 
 # 全局测试状态存储
@@ -127,6 +144,7 @@ def pytest_configure(config):
     config.addinivalue_line("markers", "performance: Performance tests / 性能测试")
     config.addinivalue_line("markers", "dependency: Mark test dependencies / 测试依赖标记")
     config.addinivalue_line("markers", "chinese_name: Chinese name for test case / 测试用例中文名")
+
 
 
 # ============================================================================
@@ -326,7 +344,7 @@ def pytest_sessionfinish(session, exitstatus):
         filename = f"test_report_{timestamp}.xlsx"
 
         print(f"\n{'='*70}")
-        print(f"生成测试报告 / Generating Test Report...")
+        print("生成测试报告 / Generating Test Report...")
         print(f"{'='*70}")
 
         # 生成报告 / Generate report
@@ -338,7 +356,7 @@ def pytest_sessionfinish(session, exitstatus):
         failed_tests = len([r for r in generator.test_results if r.get('status') == 'failed'])
         skipped_tests = len([r for r in generator.test_results if r.get('status') == 'skipped'])
 
-        print(f"\n测试统计 / Test Statistics:")
+        print("\n测试统计 / Test Statistics:")
         print(f"  总数 / Total:     {total_tests}")
         print(f"  通过 / Passed:    {passed_tests} ({passed_tests/total_tests*100:.1f}%)" if total_tests > 0 else f"  通过 / Passed:    {passed_tests}")
         print(f"  失败 / Failed:    {failed_tests} ({failed_tests/total_tests*100:.1f}%)" if total_tests > 0 else f"  失败 / Failed:    {failed_tests}")
@@ -354,7 +372,7 @@ def pytest_sessionfinish(session, exitstatus):
 
 def pytest_collection_modifyitems(config, items):
     """
-    自动添加测试依赖标记 / Automatically add test dependency markers
+    自动添加测试依赖标记并过滤辅助函数 / Automatically add test dependency markers and filter out helper functions
 
     使用钩子自动管理测试依赖，避免在每个测试上手动添加装饰器
     Use hooks to automatically manage test dependencies, avoiding manual decorators
@@ -368,6 +386,17 @@ def pytest_collection_modifyitems(config, items):
         config: Pytest configuration / Pytest配置
         items: List of collected test items / 收集的测试项列表
     """
+    # ==================== 第一步：过滤辅助函数 / Step 1: Filter out helper functions ====================
+    # filtered_items = []
+    # for item in items:
+    #     # 检查是否是辅助函数（名称包含 _test_ 且在 common.py 中）
+    #     # Check if it's a helper function (name contains _test_ and is in common.py)
+    #     if "_test_" in item.name and "common.py" in str(item.fspath):
+    #         continue  # 跳过辅助函数 / Skip helper function
+    #     filtered_items.append(item)
+    # items[:] = filtered_items
+
+    # ==================== 第二步：添加依赖标记 / Step 2: Add dependency markers ====================
     # 获取test_state（如果已经创建）
     # Get test_state (if already created)
     test_state = None
@@ -496,4 +525,5 @@ def pytest_runtest_setup(item):
 
     # 如果需要跳过，抛出SkipException / Skip if needed, raise SkipException
     if skip_reason:
+        pytest.skip(skip_reason)
         pytest.skip(skip_reason)

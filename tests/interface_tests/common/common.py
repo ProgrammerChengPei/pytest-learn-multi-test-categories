@@ -1,10 +1,10 @@
 """
 Interface Test Common Utilities / 接口测试公共工具
 """
-import json
 import time
-from typing import Dict, Any, List
-from client import Client
+from typing import Any, Dict, List
+
+from src.client import Client
 
 
 def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
@@ -148,4 +148,5 @@ def calculate_success_rate(responses: List[Dict[str, Any]]) -> float:
     if not responses:
         return 0.0
     success_count = sum(1 for r in responses if 'error' not in r and r.get('status') in ['ok', 'healthy'])
+    return (success_count / len(responses)) * 100
     return (success_count / len(responses)) * 100

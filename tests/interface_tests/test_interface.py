@@ -1,19 +1,18 @@
 """
 Interface Test Cases / 接口测试用例
 """
-import pytest
 import json
 import time
-from pathlib import Path
-from ..common.common import (
-    send_and_receive,
-    validate_response_structure,
-    validate_response_status,
-    compare_timestamps,
-    measure_request_latency,
-    batch_send_requests,
-    calculate_success_rate
-)
+
+import pytest
+
+from tests.interface_tests.common.common import (batch_send_requests,
+                                                 calculate_success_rate,
+                                                 compare_timestamps,
+                                                 measure_request_latency,
+                                                 send_and_receive,
+                                                 validate_response_status,
+                                                 validate_response_structure)
 
 
 class TestInterface:
@@ -37,7 +36,7 @@ class TestInterface:
             "type": "request",
             "command": "get_status",
             "id": 1,
-            "token": test_client.token
+            "token": Client.token
         }
 
         try:
@@ -77,7 +76,7 @@ class TestInterface:
             "type": "request",
             "command": "health_check",
             "id": 2,
-            "token": test_client.token
+            "token": Client.token
         }
 
         try:
@@ -115,7 +114,7 @@ class TestInterface:
             "command": "echo_with_timestamp",
             "id": 3,
             "text": test_text,
-            "token": test_client.token
+            "token": Client.token
         }
 
         try:
@@ -161,9 +160,9 @@ class TestInterface:
         Depends on: echo test / 依赖：echo测试
         """
         requests = [
-            {"type": "request", "command": "get_status", "id": 10, "token": test_client.token},
-            {"type": "request", "command": "health_check", "id": 11, "token": test_client.token},
-            {"type": "request", "command": "health_check", "id": 12, "token": test_client.token}
+            {"type": "request", "command": "get_status", "id": 10, "token": Client.token},
+            {"type": "request", "command": "health_check", "id": 11, "token": Client.token},
+            {"type": "request", "command": "health_check", "id": 12, "token": Client.token}
         ]
 
         try:
@@ -199,7 +198,7 @@ class TestInterface:
             "type": "request",
             "command": "health_check",
             "id": 20,
-            "token": test_client.token
+            "token": Client.token
         }
 
         try:

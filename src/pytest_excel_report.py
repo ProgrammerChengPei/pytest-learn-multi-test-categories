@@ -1,11 +1,12 @@
 """
 Pytest Plugin for Excel Report Generation / 用于生成Excel报告的Pytest插件
 """
-import pytest
 import time
-from pathlib import Path
-from typing import Dict, Any, List
 from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List
+
+import pytest
 
 
 class ExcelReportPlugin:
@@ -45,7 +46,7 @@ class ExcelReportPlugin:
         duration = self.end_time - self.start_time
 
         print("\n" + "="*60)
-        print(f"Pytest Session Finished / Pytest会话结束")
+        print("Pytest Session Finished / Pytest会话结束")
         print(f"Duration: {duration:.2f} seconds / 耗时: {duration:.2f}秒")
         print(f"Exit Status: {exitstatus}")
         print("="*60 + "\n")
@@ -147,36 +148,8 @@ def excel_report():
     return ExcelReportGenerator(Path("test_artifacts"))
 
 
-def pytest_collection_modifyitems(config, items):
-    """
-    Modify collected test items to enforce dependency order
-    修改收集的测试项以强制依赖顺序
-
-    Args:
-        config: Pytest config / Pytest配置
-        items: List of test items / 测试项列表
-    """
-    # Define order: flash -> interface -> function -> performance
-    # 定义顺序: 刷写 -> 接口 -> 功能 -> 性能
-    order_map = {
-        'flash': 0,
-        'interface': 1,
-        'function': 2,
-        'performance': 3
-    }
-
-    def get_order(item):
-        """Get test order / 获取测试顺序"""
-        for key, value in order_map.items():
-            if item.get_closest_marker(key):
-                return value
-        return 99  # Other tests go last / 其他测试放最后
-
-    # Sort items by order / 按顺序排序测试项
-    items.sort(key=get_order)
-
-
 # Register plugin / 注册插件
 def pytest_configure(config):
     """Register the plugin / 注册插件"""
+    config.pluginmanager.register(ExcelReportPlugin(), 'excel_report_plugin')
     config.pluginmanager.register(ExcelReportPlugin(), 'excel_report_plugin')

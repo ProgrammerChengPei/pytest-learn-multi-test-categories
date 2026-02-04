@@ -1,18 +1,17 @@
 """
 Interface Test Configuration / 接口测试配置
 """
-import pytest
-import json
-import time
-from typing import Dict, Any
 import sys
+import time
 from pathlib import Path
+
+import pytest
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
-from client import Client
+
 
 
 @pytest.fixture(scope="session")
@@ -23,22 +22,6 @@ def flash_test_passed(test_state):
     """
     return test_state.flash_test_passed
 
-
-@pytest.fixture(scope="session")
-def test_client(test_config):
-    """
-    Create test client instance / 创建测试客户端实例
-
-    Note: This fixture will only be valid if flash test has passed
-    注意: 仅在刷写测试通过后此fixture才有效
-    """
-    client = Client(
-        test_config.get('host', 'localhost'),
-        test_config.get('port', 8080),
-        test_config.get('token', 'your-secure-token-here')
-    )
-    yield client
-    client.close()
 
 
 @pytest.fixture

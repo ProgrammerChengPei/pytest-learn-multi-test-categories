@@ -1,13 +1,17 @@
 """
 Function Test Common Utilities / 功能测试公共工具
 """
-import time
 import hashlib
-from typing import Dict, Any, List, Callable
-from client import Client
+import time
+from typing import Any, Dict, List
+
+import pytest
+
+from src.client import Client
 
 
-def test_connection_lifecycle(client: Client) -> bool:
+@pytest.mark.private
+def _test_connection_lifecycle(client: Client) -> bool:
     """
     Test connection lifecycle / 测试连接生命周期
 
@@ -19,20 +23,20 @@ def test_connection_lifecycle(client: Client) -> bool:
     """
     try:
         # Test initial connection
-        assert client.connected, "Client should be connected initially"
+        assert client.connected, "client should be connected initially"
 
         # Test request sending
-        request = {"type": "request", "command": "get_status", "id": 1, "token": client.token}
+        request = {"type": "request", "command": "get_status", "id": 1, "token": Client.token}
         assert client.send(request), "Should be able to send request"
 
         # Test connection close
         client.close()
-        assert not client.connected, "Client should be disconnected after close"
+        assert not client.connected, "client should be disconnected after close"
 
         # Test reconnection
         success = client._connect()
         assert success, "Should be able to reconnect"
-        assert client.connected, "Client should be connected after reconnect"
+        assert client.connected, "client should be connected after reconnect"
 
         return True
     except Exception as e:
@@ -40,7 +44,7 @@ def test_connection_lifecycle(client: Client) -> bool:
         return False
 
 
-def test_message_sequence(client: Client, sequence: List[Dict[str, Any]]) -> bool:
+def _test_message_sequence(client: Client, sequence: List[Dict[str, Any]]) -> bool:
     """
     Test message sequencing / 测试消息顺序
 
@@ -65,7 +69,7 @@ def test_message_sequence(client: Client, sequence: List[Dict[str, Any]]) -> boo
         return False
 
 
-def test_error_recovery(client: Client) -> bool:
+def _test_error_recovery(client: Client) -> bool:
     """
     Test error recovery / 测试错误恢复
 
@@ -81,7 +85,7 @@ def test_error_recovery(client: Client) -> bool:
             "type": "request",
             "command": "invalid_command",
             "id": 999,
-            "token": client.token
+            "token": Client.token
         }
         client.send(invalid_request)
         time.sleep(0.5)
@@ -91,7 +95,7 @@ def test_error_recovery(client: Client) -> bool:
             "type": "request",
             "command": "health_check",
             "id": 1000,
-            "token": client.token
+            "token": Client.token
         }
         success = client.send(valid_request)
         return success
@@ -100,7 +104,7 @@ def test_error_recovery(client: Client) -> bool:
         return False
 
 
-def test_data_integrity(client: Client, test_data: str) -> bool:
+def _test_data_integrity(client: Client, test_data: str) -> bool:
     """
     Test data integrity / 测试数据完整性
 
@@ -121,7 +125,7 @@ def test_data_integrity(client: Client, test_data: str) -> bool:
             "command": "echo_with_timestamp",
             "id": 1,
             "text": test_data,
-            "token": client.token,
+            "token": Client.token,
             "checksum": original_checksum
         }
         client.send(request)
@@ -154,14 +158,14 @@ def run_test_scenario(client: Client, scenario_name: str, steps: List[str]) -> D
     }
 
     scenario_handlers = {
-        "connection_lifecycle": lambda: test_connection_lifecycle(client),
-        "message_sequence": lambda: test_message_sequence(client, [
-            {"type": "request", "command": "get_status", "token": client.token},
-            {"type": "request", "command": "health_check", "token": client.token},
-            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": client.token}
+        "connection_lifecycle": lambda: _test_connection_lifecycle(client),
+        "message_sequence": lambda: _test_message_sequence(client, [
+            {"type": "request", "command": "get_status", "token": Client.token},
+            {"type": "request", "command": "health_check", "token": Client.token},
+            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": Client.token}
         ]),
-        "error_recovery": lambda: test_error_recovery(client),
-        "data_integrity": lambda: test_data_integrity(client, "test data for integrity check")
+        "error_recovery": lambda: _test_error_recovery(client),
+        "data_integrity": lambda: _test_data_integrity(client, "test data for integrity check")
     }
 
     for step in steps:

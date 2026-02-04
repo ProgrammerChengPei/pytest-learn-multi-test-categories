@@ -1,18 +1,17 @@
 """
 Performance Test Cases / 性能测试用例
 """
-import pytest
 import json
 import time
-from pathlib import Path
-from ..common.common import (
-    PerformanceTestResult,
-    measure_latency,
-    measure_throughput,
-    concurrent_test,
-    stress_test,
-    run_performance_suite
-)
+
+import pytest
+
+from src.client import Client
+from tests.performance_tests.common.common import (concurrent_test,
+                                                   measure_latency,
+                                                   measure_throughput,
+                                                   run_performance_suite,
+                                                   stress_test)
 
 
 class TestPerformance:
@@ -33,9 +32,9 @@ class TestPerformance:
             pytest.skip("Function test has not passed yet")
 
         commands = [
-            {"type": "request", "command": "get_status", "token": test_client.token},
-            {"type": "request", "command": "health_check", "token": test_client.token},
-            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": test_client.token}
+            {"type": "request", "command": "get_status", "token": Client.token},
+            {"type": "request", "command": "health_check", "token": Client.token},
+            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": Client.token}
         ]
 
         latencies = {}
@@ -78,7 +77,7 @@ class TestPerformance:
         request = {
             "type": "request",
             "command": "health_check",
-            "token": test_client.token
+            "token": Client.token
         }
 
         try:
@@ -119,7 +118,7 @@ class TestPerformance:
 
         Depends on: Throughput test / 依赖：吞吐量测试
         """
-        from client import Client
+        
 
         try:
             result = concurrent_test(

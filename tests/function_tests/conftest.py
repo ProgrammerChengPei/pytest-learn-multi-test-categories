@@ -1,18 +1,14 @@
 """
 Function Test Configuration / 功能测试配置
 """
-import pytest
-import json
-import time
-from typing import Dict, Any
 import sys
 from pathlib import Path
+
+import pytest
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
-
-from client import Client
 
 
 @pytest.fixture(scope="session")
@@ -22,23 +18,6 @@ def interface_test_passed(test_state):
     在运行功能测试前检查接口测试是否通过
     """
     return test_state.interface_test_passed
-
-
-@pytest.fixture(scope="session")
-def test_client(test_config):
-    """
-    Create test client instance for function tests / 为功能测试创建测试客户端实例
-
-    Note: Requires both flash and interface tests to pass
-    注意: 需要刷写和接口测试都通过
-    """
-    client = Client(
-        test_config.get('host', 'localhost'),
-        test_config.get('port', 8080),
-        test_config.get('token', 'your-secure-token-here')
-    )
-    yield client
-    client.close()
 
 
 @pytest.fixture
