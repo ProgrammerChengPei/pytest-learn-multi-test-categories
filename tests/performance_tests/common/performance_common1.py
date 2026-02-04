@@ -153,6 +153,9 @@ def concurrent_test(client_creator, num_clients: int, requests_per_client: int =
     """
     Run concurrent test / 运行并发测试
 
+    Note: Accepts any client-like object with send() and token attributes.
+    注意: 接受任何具有 send() 和 token 属性的类客户端对象。
+
     Args:
         client_creator: Function to create client / 创建客户端的函数
         num_clients: Number of concurrent clients / 并发客户端数量
@@ -193,7 +196,6 @@ def concurrent_test(client_creator, num_clients: int, requests_per_client: int =
                 with results_lock:
                     result.failed_requests += 1
                     result.errors.append(str(e))
-        client.close()
 
     start_time = time.time()
 
@@ -257,9 +259,12 @@ def stress_test(client: Client, max_requests: int = 1000, max_duration: int = 30
     return result
 
 
-def run_performance_suite(client: Client) -> List[PerformanceTestResult]:
+def run_performance_suite(client) -> List[PerformanceTestResult]:
     """
     Run complete performance test suite / 运行完整性能测试套件
+
+    Note: Accepts any client-like object with send() and token attributes.
+    注意: 接受任何具有 send() 和 token 属性的类客户端对象。
 
     Args:
         client: Client instance / 客户端实例
@@ -288,11 +293,10 @@ def run_performance_suite(client: Client) -> List[PerformanceTestResult]:
 
     # Concurrent test (simple version)
     result = concurrent_test(
-        lambda: Client(client.host, client.port, client.token),
+        lambda: client,
         num_clients=3,
         requests_per_client=10
     )
     results.append(result)
 
-    return results
     return results

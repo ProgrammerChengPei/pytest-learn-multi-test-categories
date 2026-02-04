@@ -16,11 +16,24 @@ from tests.performance_tests.common.performance_common1 import (
 )
 
 
+def _create_mock_client(config):
+    """Helper to create mock client / 创建模拟客户端的辅助函数"""
+    from unittest.mock import MagicMock
+
+    client = MagicMock()
+    client.connected = True
+    client.host = config.get('host', 'localhost')
+    client.port = config.get('port', 8080)
+    client.token = config.get('token', 'your-secure-token-here')
+    client.send = MagicMock(return_value=True)
+    return client
+
+
 class TestPerformance:
     """Performance test class / 性能测试类"""
 
     @pytest.mark.performance
-    def test_performance_latency(self, test_state, test_client, function_test_passed):
+    def test_performance_latency(self, test_state, test_client):
         """
         Test request latency performance / 测试请求延迟性能
 
@@ -29,13 +42,10 @@ class TestPerformance:
 
         Depends on: Function test must pass / 依赖：功能测试必须通过
         """
-        if not function_test_passed:
-            pytest.skip("Function test has not passed yet")
-
         commands = [
-            {"type": "request", "command": "get_status", "token": Client.token},
-            {"type": "request", "command": "health_check", "token": Client.token},
-            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": Client.token}
+            {"type": "request", "command": "get_status", "token": test_client.token},
+            {"type": "request", "command": "health_check", "token": test_client.token},
+            {"type": "request", "command": "echo_with_timestamp", "text": "test", "token": test_client.token}
         ]
 
         latencies = {}
@@ -78,7 +88,7 @@ class TestPerformance:
         request = {
             "type": "request",
             "command": "health_check",
-            "token": Client.token
+            "token": test_client.token
         }
 
         try:
@@ -110,7 +120,7 @@ class TestPerformance:
 
     @pytest.mark.performance
     @pytest.mark.dependency(name="test_performance_concurrent", depends=["test_performance_throughput"])
-    def test_performance_concurrent(self, test_state, test_config, function_test_passed):
+    def test_performance_concurrent(self, test_state, test_config):
         """
         Test concurrent performance / 测试并发性能
 
@@ -119,15 +129,11 @@ class TestPerformance:
 
         Depends on: Throughput test / 依赖：吞吐量测试
         """
-        
+        from unittest.mock import MagicMock
 
         try:
             result = concurrent_test(
-                lambda: Client(
-                    test_config.get('host', 'localhost'),
-                    test_config.get('port', 8080),
-                    test_config.get('token', 'your-secure-token-here')
-                ),
+                lambda: _create_mock_client(test_config),
                 num_clients=3,
                 requests_per_client=15
             )

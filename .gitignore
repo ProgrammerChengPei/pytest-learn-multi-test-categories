@@ -19,6 +19,6 @@ reports/
 .vscode/
 .mypy/
 .mypy_cache/
-log/
+logs/
 /**/*.log
 test_artifacts/

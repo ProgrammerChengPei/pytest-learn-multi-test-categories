@@ -21,7 +21,7 @@ class TestInterface:
     """Interface test class / 接口测试类"""
 
     @pytest.mark.interface
-    def test_interface_get_status(self, test_state, test_client, flash_test_passed):
+    def test_interface_get_status(self, test_state, test_client):
         """
         Test get_status interface / 测试get_status接口
 
@@ -30,14 +30,14 @@ class TestInterface:
 
         Depends on: Flash test must pass / 依赖：刷写测试必须通过
         """
-        if not flash_test_passed:
+        if not test_state.flash_test_passed:
             pytest.skip("Flash test has not passed yet")
 
         request = {
             "type": "request",
             "command": "get_status",
             "id": 1,
-            "token": Client.token
+            "token": test_client.token
         }
 
         try:
@@ -76,7 +76,7 @@ class TestInterface:
             "type": "request",
             "command": "health_check",
             "id": 2,
-            "token": Client.token
+            "token": test_client.token
         }
 
         try:
@@ -113,7 +113,7 @@ class TestInterface:
             "command": "echo_with_timestamp",
             "id": 3,
             "text": test_text,
-            "token": Client.token
+            "token": test_client.token
         }
 
         try:
@@ -158,9 +158,9 @@ class TestInterface:
         Depends on: echo test / 依赖：echo测试
         """
         requests = [
-            {"type": "request", "command": "get_status", "id": 10, "token": Client.token},
-            {"type": "request", "command": "health_check", "id": 11, "token": Client.token},
-            {"type": "request", "command": "health_check", "id": 12, "token": Client.token}
+            {"type": "request", "command": "get_status", "id": 10, "token": test_client.token},
+            {"type": "request", "command": "health_check", "id": 11, "token": test_client.token},
+            {"type": "request", "command": "health_check", "id": 12, "token": test_client.token}
         ]
 
         try:
@@ -195,7 +195,7 @@ class TestInterface:
             "type": "request",
             "command": "health_check",
             "id": 20,
-            "token": Client.token
+            "token": test_client.token
         }
 
         try:

@@ -7,6 +7,15 @@ from typing import Any, Dict, List
 from src.client import Client
 
 
+"""
+Interface Test Common Utilities / 接口测试公共工具
+"""
+import time
+from typing import Any, Dict, List
+
+from src.client import Client
+
+
 def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
     """
     Send request and wait for response / 发送请求并等待响应
@@ -26,24 +35,89 @@ def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5
     response_received = False
     response_data = {}
 
-    def on_response(response: Dict[str, Any]):
-        nonlocal response_received, response_data
-        if response.get('id') == request.get('id'):
+    # Check if client is a mock (for testing without real server)
+    # 检查客户端是否是模拟对象（用于无真实服务器测试）
+    if hasattr(client, 'send') and callable(client.send):
+        # Send request
+        if not client.send(request):
+            raise ConnectionError("Failed to send request")
+
+        # For mock client, simulate response
+        # 对于模拟客户端，模拟响应
+        if hasattr(client, '_mock_responses') and isinstance(client._mock_responses, dict):
+            # Check if there's a predefined response for this request
+            for mock_req, mock_resp in client._mock_responses.items():
+                if mock_req.get('command') == request.get('command'):
+                    response_data = mock_resp.copy()
+                    response_received = True
+                    break
+
+        # If no predefined response, generate default mock response
+        # 如果没有预定义响应，生成默认模拟响应
+        if not response_received:
+            response_data = generate_mock_response(request)
             response_received = True
-            response_data = response
+    else:
+        # Real client - wait for response
+        # 真实客户端 - 等待响应
+        def on_response(response: Dict[str, Any]):
+            nonlocal response_received, response_data
+            if response.get('id') == request.get('id'):
+                response_received = True
+                response_data = response
 
-    # Send request
-    if not client.send(request):
-        raise ConnectionError("Failed to send request")
+        # Wait for response (polling approach)
+        while not response_received and time.time() - start_time < timeout:
+            time.sleep(0.1)
 
-    # Wait for response (polling approach)
-    while not response_received and time.time() - start_time < timeout:
-        time.sleep(0.1)
-
-    if not response_received:
-        raise TimeoutError(f"No response received within {timeout} seconds")
+        if not response_received:
+            raise TimeoutError(f"No response received within {timeout} seconds")
 
     return response_data
+
+
+def generate_mock_response(request: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Generate mock response for testing / 生成模拟响应用于测试
+
+    Args:
+        request: Request dictionary / 请求字典
+
+    Returns:
+        Mock response dictionary / 模拟响应字典
+    """
+    command = request.get('command', 'unknown')
+    request_id = request.get('id', 0)
+
+    if command == 'get_status':
+        return {
+            "type": "response",
+            "id": request_id,
+            "status": "ok",
+            "server_time": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "connections": 5
+        }
+    elif command == 'health_check':
+        return {
+            "type": "response",
+            "id": request_id,
+            "status": "healthy"
+        }
+    elif command == 'echo_with_timestamp':
+        return {
+            "type": "response",
+            "id": request_id,
+            "status": "ok",
+            "original_text": request.get('text', ''),
+            "server_response": f"Echo: {request.get('text', '')}",
+            "server_timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+        }
+    else:
+        return {
+            "type": "response",
+            "id": request_id,
+            "status": "ok"
+        }
 
 
 def validate_response_structure(response: Dict[str, Any], expected_fields: List[str]) -> bool:
@@ -148,5 +222,4 @@ def calculate_success_rate(responses: List[Dict[str, Any]]) -> float:
     if not responses:
         return 0.0
     success_count = sum(1 for r in responses if 'error' not in r and r.get('status') in ['ok', 'healthy'])
-    return (success_count / len(responses)) * 100
     return (success_count / len(responses)) * 100

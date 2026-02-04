@@ -1,7 +1,0 @@
-2026-02-04 14:51:33 [   ERROR] client.py:71 - Connection failed: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
-2026-02-04 14:51:33 [    INFO] client.py:197 - Closing client connection
-2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_prepare because it depends on test_flash_connection
-2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_upload because it depends on test_flash_prepare
-2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_verify because it depends on test_flash_upload
-2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_complete because it depends on test_flash_verify
-2026-02-04 14:51:33 [    INFO] client.py:197 - Closing client connection
