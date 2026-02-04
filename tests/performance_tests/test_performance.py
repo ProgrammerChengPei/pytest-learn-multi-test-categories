@@ -18,7 +18,6 @@ class TestPerformance:
     """Performance test class / 性能测试类"""
 
     @pytest.mark.performance
-    @pytest.mark.dependency(name="test_performance_latency", depends=["test_function_complete"])
     def test_performance_latency(self, test_state, test_client, function_test_passed):
         """
         Test request latency performance / 测试请求延迟性能

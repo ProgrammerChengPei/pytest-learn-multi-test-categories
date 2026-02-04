@@ -19,7 +19,6 @@ class TestInterface:
     """Interface test class / 接口测试类"""
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_get_status", depends=["test_flash_complete"])
     def test_interface_get_status(self, test_state, test_client, flash_test_passed):
         """
         Test get_status interface / 测试get_status接口
@@ -62,7 +61,6 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_health_check", depends=["test_interface_get_status"])
     def test_interface_health_check(self, test_state, test_client):
         """
         Test health_check interface / 测试health_check接口
@@ -98,7 +96,6 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_echo", depends=["test_interface_health_check"])
     def test_interface_echo(self, test_state, test_client):
         """
         Test echo_with_timestamp interface / 测试echo_with_timestamp接口
@@ -149,7 +146,6 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_batch_requests", depends=["test_interface_echo"])
     def test_interface_batch_requests(self, test_state, test_client):
         """
         Test batch interface requests / 测试批量接口请求
@@ -184,7 +180,6 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_latency", depends=["test_interface_batch_requests"])
     def test_interface_latency(self, test_state, test_client):
         """
         Test interface request latency / 测试接口请求延迟
@@ -223,7 +218,6 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    @pytest.mark.dependency(name="test_interface_complete", depends=["test_interface_latency"])
     def test_interface_complete(self, test_state, test_client, test_artifacts_dir):
         """
         Test interface completion / 测试接口测试完成

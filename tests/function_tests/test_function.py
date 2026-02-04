@@ -7,19 +7,16 @@ import time
 import pytest
 
 from src.client import Client
-from tests.function_tests.common.common import (
-    _test_connection_lifecycle,
-    _test_data_integrity,
-    _test_error_recovery,
-    _test_message_sequence,
-)
+from tests.function_tests.common.common import (_test_connection_lifecycle,
+                                                _test_data_integrity,
+                                                _test_error_recovery,
+                                                _test_message_sequence)
 
 
 class TestFunction:
     """Function test class / 功能测试类"""
 
     @pytest.mark.function
-    @pytest.mark.dependency(name="test_function_connection_lifecycle", depends=["test_interface_complete"])
     def test_function_connection_lifecycle(self, test_client, test_state, interface_test_passed):
         """
         Test connection lifecycle functionality / 测试连接生命周期功能

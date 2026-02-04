@@ -422,24 +422,43 @@ def pytest_collection_modifyitems(config, items):
         'performance': 'test_function_complete'
     }
 
+    # 首先注册所有已命名测试到pytest-dependency系统
+    # First register all named tests to pytest-dependency system
     for item in items:
-        # 检查测试类型标记 / Check test type markers
-        for marker_name in ['interface', 'function', 'performance']:
-            if item.get_closest_marker(marker_name):
-                # 添加自动依赖标记 / Add automatic dependency marker
-                dependency_name = dependency_mapping.get(marker_name)
-                if dependency_name:
-                    # 使用pytest-dependency的内部API添加依赖
-                    # Use pytest-dependency's internal API to add dependency
-                    item.add_marker(
-                        pytest.mark.dependency(
-                            depends=[dependency_name],
-                            name=f"{marker_name}_auto_dep_{item.name}"
-                        )
-                    )
-                    # 打印调试信息 / Print debug info
-                    print(f"[Auto Dependency] {item.name} → depends on {dependency_name}")
-                break
+        # 获取测试的dependency name（如果已设置）
+        # Get test's dependency name (if set)
+        dependency_marker = item.get_closest_marker('dependency')
+        if dependency_marker and 'name' in dependency_marker.kwargs:
+            dep_name = dependency_marker.kwargs['name']
+            # 将简化名称存储为别名，使pytest-dependency能找到它
+            # Store simplified name as alias so pytest-dependency can find it
+            setattr(item, '_dep_name', dep_name)
+            # 同时将简化名称也注册到item的属性中
+            # Also register simplified name to item's attributes
+            item._dependency_names = getattr(item, '_dependency_names', [])
+            item._dependency_names.append(dep_name)
+
+    # 禁用自动添加pytest-dependency标记，因为pytest_runtest_setup已经基于test_state实现了依赖检查
+    # Disable automatic pytest-dependency marker addition, as pytest_runtest_setup already implements
+    # dependency checking based on test_state
+    # for item in items:
+    #     # 检查测试类型标记 / Check test type markers
+    #     for marker_name in ['interface', 'function', 'performance']:
+    #         if item.get_closest_marker(marker_name):
+    #             # 添加自动依赖标记 / Add automatic dependency marker
+    #             dependency_name = dependency_mapping.get(marker_name)
+    #             if dependency_name:
+    #                 # 使用pytest-dependency的内部API添加依赖
+    #                 # Use pytest-dependency's internal API to add dependency
+    #                 item.add_marker(
+    #                     pytest.mark.dependency(
+    #                         depends=[dependency_name],
+    #                         name=f"{marker_name}_auto_dep_{item.name}"
+    #                     )
+    #                 )
+    #                 # 打印调试信息 / Print debug info
+    #                 print(f"[Auto Dependency] {item.name} → depends on {dependency_name}")
+    #             break
 
     # 按测试类型排序（可选） / Sort by test type (optional)
     def get_test_order(item):

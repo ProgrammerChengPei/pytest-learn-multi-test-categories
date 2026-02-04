@@ -39,7 +39,7 @@ class TestFlash:
             test_client.close()
 
     @pytest.mark.flash
-    @pytest.mark.dependency(depends=["test_flash_connection"], name="test_flash_prepare")
+    @pytest.mark.dependency(name="test_flash_prepare", depends=["test_flash_connection"])
     def test_flash_prepare(self, test_client, test_state, test_config):
         """
         Test flash preparation / 测试刷写准备
@@ -64,7 +64,7 @@ class TestFlash:
             test_client.close()
 
     @pytest.mark.flash
-    @pytest.mark.dependency(depends=["test_flash_prepare"], name="test_flash_upload")
+    @pytest.mark.dependency(name="test_flash_upload", depends=["test_flash_prepare"])
     def test_flash_upload(self, test_client, test_state, test_config):
         """
         Test flash upload / 测试刷写上传
@@ -93,7 +93,7 @@ class TestFlash:
             test_client.close()
 
     @pytest.mark.flash
-    @pytest.mark.dependency(depends=["test_flash_upload"], name="test_flash_verify")
+    @pytest.mark.dependency(name="test_flash_verify", depends=["test_flash_upload"])
     def test_flash_verify(self, test_client, test_state, test_config):
         """
         Test flash verification / 测试刷写验证
@@ -113,7 +113,7 @@ class TestFlash:
             test_client.close()
 
     @pytest.mark.flash
-    @pytest.mark.dependency(depends=["test_flash_verify"], name="test_flash_complete")
+    @pytest.mark.dependency(name="test_flash_complete", depends=["test_flash_verify"])
     def test_flash_complete(self, test_client, test_state, test_config, test_artifacts_dir):
         """
         Test flash completion / 测试刷写完成
