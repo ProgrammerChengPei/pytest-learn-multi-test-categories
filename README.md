@@ -47,7 +47,6 @@ pytest-learn-multi-test-categories/
 │       └── common/              # 性能测试辅助模块 / Performance test utilities
 │           └── performance_common1.py
 ├── reports/                        # 测试报告目录 / Test reports directory (自动生成)
-├── test_artifacts/                # 测试产物目录 / Test artifacts directory (自动生成)
 ├── templates/                      # Excel模板目录 / Excel templates directory
 │   └── test_report_template.xlsx   # Excel报告模板 / Excel report template
 ├── configs/                        # 配置文件 / Configuration files
@@ -250,7 +249,7 @@ def test_api_login():
 
 详细配置指南：[docs/测试用例中文名映射指南.md](docs/测试用例中文名映射指南.md)
 
-## Test Artifacts / 测试产物
+## reports / 测试报告
 
 测试运行后会自动生成以下文件：
 

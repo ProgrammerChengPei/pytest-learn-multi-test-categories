@@ -184,7 +184,7 @@ class TestPerformance:
 
     @pytest.mark.performance
     @pytest.mark.dependency(name="test_performance_complete", depends=["test_performance_stress"])
-    def test_performance_complete(self, test_state, test_client, test_artifacts_dir):
+    def test_performance_complete(self, test_state, test_client, reports_dir):
         """
         Test performance completion / 测试性能测试完成
 
@@ -208,7 +208,7 @@ class TestPerformance:
             }
 
             # Save performance test result
-            result_file = test_artifacts_dir / "performance_test_result.json"
+            result_file = reports_dir / "performance_test_result.json"
             with open(result_file, 'w', encoding='utf-8') as f:
                 json.dump(summary, f, ensure_ascii=False, indent=2)
 

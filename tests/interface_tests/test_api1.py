@@ -220,7 +220,7 @@ class TestInterface:
             raise
 
     @pytest.mark.interface
-    def test_interface_complete(self, test_state, test_client, test_artifacts_dir):
+    def test_interface_complete(self, test_state, test_client, reports_dir):
         """
         Test interface completion / 测试接口测试完成
 
@@ -239,7 +239,7 @@ class TestInterface:
             "tests_passed": 5
         }
 
-        result_file = test_artifacts_dir / "interface_test_result.json"
+        result_file = reports_dir / "interface_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
 

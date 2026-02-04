@@ -21,4 +21,3 @@ reports/
 .mypy_cache/
 logs/
 /**/*.log
-test_artifacts/

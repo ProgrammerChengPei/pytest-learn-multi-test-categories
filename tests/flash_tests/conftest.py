@@ -17,12 +17,12 @@ def flash_test_passed(test_state):
 
 
 @pytest.fixture(scope="session")
-def flash_test_result(test_artifacts_dir):
+def flash_test_result(reports_dir):
     """
     Load flash test result from file / 从文件加载刷写测试结果
 
     Args:
-        test_artifacts_dir: Test artifacts directory / 测试产物目录
+        reports_dir: reports directory / 测试报告目录
 
     Returns:
         dict: Flash test result or None / 刷写测试结果或None
@@ -30,7 +30,7 @@ def flash_test_result(test_artifacts_dir):
     import json
     from pathlib import Path
 
-    result_file = test_artifacts_dir / "flash_test_result.json"
+    result_file = reports_dir / "flash_test_result.json"
     if result_file.exists():
         with open(result_file, 'r', encoding='utf-8') as f:
             return json.load(f)

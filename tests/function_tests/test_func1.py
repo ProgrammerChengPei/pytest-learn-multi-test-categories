@@ -148,7 +148,7 @@ class TestFunction:
 
     @pytest.mark.function
     @pytest.mark.dependency(name="test_function_complete", depends=["test_function_multiple_clients"])
-    def test_function_complete(self, test_state, test_client, test_artifacts_dir):
+    def test_function_complete(self, test_state, test_client, reports_dir):
         """
         Test function completion / 测试功能测试完成
 
@@ -167,7 +167,7 @@ class TestFunction:
             "tests_passed": 6
         }
 
-        result_file = test_artifacts_dir / "function_test_result.json"
+        result_file = reports_dir / "function_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
 

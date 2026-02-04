@@ -98,7 +98,7 @@ class TestFlash:
 
     @pytest.mark.flash
     @pytest.mark.dependency(name="test_flash_complete", depends=["test_flash_verify"])
-    def test_flash_complete(self, test_client, test_state, test_config, test_artifacts_dir):
+    def test_flash_complete(self, test_client, test_state, test_config, reports_dir):
         """
         Test flash completion / 测试刷写完成
 
@@ -116,7 +116,7 @@ class TestFlash:
             "flash_version": "1.0.0"
         }
 
-        result_file = test_artifacts_dir / "flash_test_result.json"
+        result_file = reports_dir / "flash_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
             json.dump(result, f, ensure_ascii=False, indent=2)
 

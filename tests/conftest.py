@@ -194,18 +194,18 @@ def test_config():
 
 
 @pytest.fixture(scope="session")
-def test_artifacts_dir():
-    """Create and return test artifacts directory / 创建并返回测试产物目录"""
-    artifacts_dir = project_root / "test_artifacts"
+def reports_dir():
+    """Create and return reports directory / 创建并返回测试报告目录"""
+    artifacts_dir = project_root / "reports"
     artifacts_dir.mkdir(exist_ok=True)
     return artifacts_dir
 
 
 @pytest.fixture
-def temp_file(test_artifacts_dir):
+def temp_file(reports_dir):
     """Create a temporary file for testing / 创建临时测试文件"""
     def _create_temp_file(name: str, content: str = ""):
-        temp_path = test_artifacts_dir / name
+        temp_path = reports_dir / name
         with open(temp_path, 'w', encoding='utf-8') as f:
             f.write(content)
         return temp_path
@@ -283,7 +283,7 @@ def pytest_sessionstart(session):
         session: Pytest session object / Pytest会话对象
     """
     global _excel_report_generator
-    from src.template_based_report import TemplateBasedReportGenerator
+    from tests.common.template_based_report import TemplateBasedReportGenerator
 
     # 报告配置文件路径 / Report config file path
     config_path = project_root / "configs" / "report_config.json"
