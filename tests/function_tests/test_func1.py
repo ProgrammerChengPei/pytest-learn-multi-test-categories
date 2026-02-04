@@ -7,10 +7,12 @@ import time
 import pytest
 
 from src.client import Client
-from tests.function_tests.common.common import (_test_connection_lifecycle,
-                                                _test_data_integrity,
-                                                _test_error_recovery,
-                                                _test_message_sequence)
+from tests.function_tests.common.function_common1 import (
+    _test_connection_lifecycle,
+    _test_data_integrity,
+    _test_error_recovery,
+    _test_message_sequence
+)
 
 
 class TestFunction:

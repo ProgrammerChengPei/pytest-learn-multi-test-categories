@@ -19,30 +19,44 @@ Embedded Pytest test framework supporting interface, function, and performance t
 
 ```
 pytest-learn-multi-test-categories/
-├── src/                          # Source code / 源代码
-│   ├── client.py                # TCP客户端 / TCP Client
-│   ├── server.py                # TCP服务器 / TCP Server
-│   ├── log.py                   # 日志配置 / Logging config
-│   ├── excel_report.py          # Excel报告生成器 / Excel report generator
-│   └── template_based_report.py # 基于模板的报告生成器 / Template-based report generator
-├── tests/                       # Test files / 测试文件
-│   ├── conftest.py             # 全局配置和钩子 / Global config and hooks
-│   ├── common/                  # 公共工具 / Common utilities
-│   ├── flash_tests/            # 刷写测试 / Flash tests
-│   ├── interface_tests/        # 接口测试 / Interface tests
-│   ├── function_tests/         # 功能测试 / Function tests
-│   └── performance_tests/      # 性能测试 / Performance tests
-├── reports/                     # 测试报告目录 / Test reports directory (自动生成)
-│   └── test_report_YYYYMMDD_HHMMSS.xlsx
-├── templates/                   # Excel模板目录 / Excel templates directory
-│   └── test_report_template.xlsx  # Excel报告模板 / Excel report template
-├── configs/                     # 配置文件 / Configuration files
-│   ├── config.json             # 测试配置 / Test configuration
-│   └── report_config.json      # 报告配置 / Report configuration
-├── scripts/                     # 脚本文件 / Script files
-│   └── create_template.py      # 模板生成脚本 / Template generator script
-├── docs/                        # 文档 / Documentation
-└── requirements.txt             # Python依赖 / Python dependencies
+├── src/                              # Source code / 源代码
+│   ├── client.py                    # TCP客户端 / TCP Client
+│   ├── server.py                    # TCP服务器 / TCP Server
+│   ├── log.py                       # 日志配置 / Logging config
+│   ├── excel_report.py              # Excel报告生成器 / Excel report generator
+│   └── template_based_report.py    # 基于模板的报告生成器 / Template-based report generator
+├── tests/                           # Test files / 测试文件
+│   ├── conftest.py                 # 全局配置和钩子 / Global config and hooks
+│   ├── flash_tests/                # 刷写测试 / Flash tests
+│   │   ├── conftest.py           # 刷写测试配置 / Flash test config
+│   │   ├── test_flash1.py        # 刷写测试用例 / Flash test cases
+│   │   └── common/              # 刷写测试辅助模块 / Flash test utilities
+│   ├── interface_tests/            # 接口测试 / Interface tests
+│   │   ├── conftest.py           # 接口测试配置 / Interface test config
+│   │   ├── test_api1.py         # 接口测试用例 / Interface test cases
+│   │   └── common/              # 接口测试辅助模块 / Interface test utilities
+│   │       └── interface_common1.py
+│   ├── function_tests/             # 功能测试 / Function tests
+│   │   ├── conftest.py           # 功能测试配置 / Function test config
+│   │   ├── test_func1.py        # 功能测试用例 / Function test cases
+│   │   └── common/              # 功能测试辅助模块 / Function test utilities
+│   │       └── function_common1.py
+│   └── performance_tests/         # 性能测试 / Performance tests
+│       ├── conftest.py           # 性能测试配置 / Performance test config
+│       ├── test_perf1.py        # 性能测试用例 / Performance test cases
+│       └── common/              # 性能测试辅助模块 / Performance test utilities
+│           └── performance_common1.py
+├── reports/                        # 测试报告目录 / Test reports directory (自动生成)
+├── test_artifacts/                # 测试产物目录 / Test artifacts directory (自动生成)
+├── templates/                      # Excel模板目录 / Excel templates directory
+│   └── test_report_template.xlsx   # Excel报告模板 / Excel report template
+├── configs/                        # 配置文件 / Configuration files
+│   ├── config.json                # 测试配置 / Test configuration
+│   └── report_config.json         # 报告配置 / Report configuration
+├── scripts/                        # 脚本文件 / Script files
+│   └── create_template.py         # 模板生成脚本 / Template generator script
+├── pyproject.toml                  # Pytest配置文件 / Pytest configuration file
+└── requirements.txt                # Python依赖 / Python dependencies
 ```
 
 ## Test Dependency Chain / 测试依赖链
@@ -96,7 +110,7 @@ def test_interface_test():
 | `pytest_collection_modifyitems` | 自动添加依赖标记 |
 | `pytest_sessionfinish` | 自动生成Excel报告 |
 
-详细信息请参考：[docs/钩子驱动的全自动化测试框架.md](docs/钩子驱动的全自动化测试框架.md)
+详细信息请参考项目说明文档。
 
 ## Installation / 安装
 

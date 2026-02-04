@@ -7,11 +7,13 @@ import time
 import pytest
 
 from src.client import Client
-from tests.performance_tests.common.common import (concurrent_test,
-                                                   measure_latency,
-                                                   measure_throughput,
-                                                   run_performance_suite,
-                                                   stress_test)
+from tests.performance_tests.common.performance_common1 import (
+    concurrent_test,
+    measure_latency,
+    measure_throughput,
+    run_performance_suite,
+    stress_test
+)
 
 
 class TestPerformance:

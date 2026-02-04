@@ -1,11 +1,7 @@
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_interface_get_status because it depends on tests2.flash_tests.test_flash.TestFlash#test_flash_complete
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_interface_health_check because it depends on tests2.interface_tests.test_interface.TestInterface#test_interface_get_status
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_interface_complete because it depends on tests2.interface_tests.test_interface.TestInterface#test_interface_health_check
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_function_basic because it depends on tests2.interface_tests.test_interface.TestInterface#test_interface_complete
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_function_advanced because it depends on tests2.function_tests.test_function.TestFunction#test_function_basic
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_function_complete because it depends on tests2.function_tests.test_function.TestFunction#test_function_advanced
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_performance_latency because it depends on tests2.function_tests.test_function.TestFunction#test_function_complete
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_performance_throughput because it depends on tests2.performance_tests.test_performance.TestPerformance#test_performance_latency
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_performance_complete because it depends on tests2.performance_tests.test_performance.TestPerformance#test_performance_throughput
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_b because it depends on test_a
-2026-02-04 13:03:17 [    INFO] pytest_dependency.py:100 - skip test_cross_b because it depends on test_cross_a
+2026-02-04 14:51:33 [   ERROR] client.py:71 - Connection failed: [WinError 10061] 由于目标计算机积极拒绝，无法连接。
+2026-02-04 14:51:33 [    INFO] client.py:197 - Closing client connection
+2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_prepare because it depends on test_flash_connection
+2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_upload because it depends on test_flash_prepare
+2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_verify because it depends on test_flash_upload
+2026-02-04 14:51:33 [    INFO] pytest_dependency.py:100 - skip test_flash_complete because it depends on test_flash_verify
+2026-02-04 14:51:33 [    INFO] client.py:197 - Closing client connection

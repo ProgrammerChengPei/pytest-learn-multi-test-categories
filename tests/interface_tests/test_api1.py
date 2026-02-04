@@ -6,13 +6,15 @@ import time
 
 import pytest
 
-from tests.interface_tests.common.common import (batch_send_requests,
-                                                 calculate_success_rate,
-                                                 compare_timestamps,
-                                                 measure_request_latency,
-                                                 send_and_receive,
-                                                 validate_response_status,
-                                                 validate_response_structure)
+from tests.interface_tests.common.interface_common1 import (
+    batch_send_requests,
+    calculate_success_rate,
+    compare_timestamps,
+    measure_request_latency,
+    send_and_receive,
+    validate_response_status,
+    validate_response_structure
+)
 
 
 class TestInterface:
