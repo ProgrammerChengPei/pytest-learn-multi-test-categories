@@ -3,12 +3,20 @@ Test client for the enhanced TCP server.
 Sends a valid request with correct message type and token.
 """
 import json
+import os
 import socket
+import sys
 import threading
 import time
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from log import logger
+# 添加项目根目录到 Python 路径（用于直接运行脚本时）
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from src.log import logger
 
 
 class Client:

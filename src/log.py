@@ -7,7 +7,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
     handlers=[
-        logging.FileHandler('log/log.log'),
+        logging.FileHandler('logs/log.log'),
         logging.StreamHandler()
     ]
 )

@@ -6,11 +6,18 @@ import argparse
 import json
 import os
 import socket
+import sys
 import threading
 import time
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from log import load_config, logger
+# 添加项目根目录到 Python 路径（用于直接运行脚本时）
+project_root = Path(__file__).parent.parent
+if str(project_root) not in sys.path:
+    sys.path.insert(0, str(project_root))
+
+from src.log import load_config, logger
 
 
 class ConnectionManager:
