@@ -65,11 +65,72 @@ def test_client(test_config):
 class TestState:
     """Test state manager / 测试状态管理器"""
     def __init__(self):
-        self.flash_test_passed = False
-        self.interface_test_passed = False
-        self.function_test_passed = False
+        self.flash_test_total = 0
+        self.flash_test_passed_count = 0
+        self.flash_test_failed = False
+        self.interface_test_total = 0
+        self.interface_test_passed_count = 0
+        self.interface_test_failed = False
+        self.function_test_total = 0
+        self.function_test_passed_count = 0
+        self.function_test_failed = False
         self.results: Dict[str, Any] = {}
 
+    def set_flash_total(self, count: int):
+        """设置 flash 测试总数 / Set total flash tests count"""
+        self.flash_test_total = count
+
+    def increment_flash_passed(self):
+        """增加 flash 测试通过计数 / Increment flash tests passed count"""
+        self.flash_test_passed_count += 1
+
+    def mark_flash_failed(self):
+        """标记 flash 测试失败 / Mark flash test failed"""
+        self.flash_test_failed = True
+
+    def is_flash_complete(self) -> bool:
+        """检查 flash 测试是否全部通过 / Check if all flash tests passed"""
+        return (self.flash_test_passed_count == self.flash_test_total
+                and self.flash_test_total > 0
+                and not self.flash_test_failed)
+
+    def set_interface_total(self, count: int):
+        """设置 interface 测试总数 / Set total interface tests count"""
+        self.interface_test_total = count
+
+    def increment_interface_passed(self):
+        """增加 interface 测试通过计数 / Increment interface tests passed count"""
+        self.interface_test_passed_count += 1
+
+    def mark_interface_failed(self):
+        """标记 interface 测试失败 / Mark interface test failed"""
+        self.interface_test_failed = True
+
+    def is_interface_complete(self) -> bool:
+        """检查 interface 测试是否全部通过 / Check if all interface tests passed"""
+        return (self.interface_test_passed_count == self.interface_test_total
+                and self.interface_test_total > 0
+                and not self.interface_test_failed)
+
+    def set_function_total(self, count: int):
+        """设置 function 测试总数 / Set total function tests count"""
+        self.function_test_total = count
+
+    def increment_function_passed(self):
+        """增加 function 测试通过计数 / Increment function tests passed count"""
+        self.function_test_passed_count += 1
+
+    def mark_function_failed(self):
+        """标记 function 测试失败 / Mark function test failed"""
+        self.function_test_failed = True
+
+    def is_function_complete(self) -> bool:
+        """检查 function 测试是否全部通过 / Check if all function tests passed"""
+        return (self.function_test_passed_count == self.function_test_total
+                and self.function_test_total > 0
+                and not self.function_test_failed)
+
+    # 保留旧方法以兼容 / Keep old methods for compatibility
     def mark_flash_passed(self):
         self.flash_test_passed = True
 
@@ -162,6 +223,11 @@ def pytest_sessionstart(session):
     global _excel_report_generator
     _excel_report_generator = generator
     session.config.session_start_time = time.time()
+
+    # 初始化 test_state 并存储到 session
+    # Initialize test_state and store to session
+    from tests.conftest import TestState
+    session._test_state_cache = TestState()
 
     print(f"\n{'='*70}")
     print(f"测试会话开始 / Test Session Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -273,38 +339,35 @@ def pytest_runtest_logreport(report):
             name_display = chinese_name if chinese_name else test_result['name']
             print(f"  [{status_icon}] {test_type.upper()}: {name_display} ({report.duration:.3f}s)")
 
-        # Update test_state when test passes
-        # 测试通过时更新test_state
-        if report.passed:
-            # Get session-scoped test_state fixture
-            # 获取session范围的test_state fixture
+            # Update test_state when test completes (passed or failed)
+            # 测试完成时更新test_state（通过或失败）
             try:
                 if hasattr(report, 'item'):
                     item = report.item
-                    # Try to get test_state from session
-                    # 尝试从session获取test_state
                     if hasattr(item, 'session'):
                         session = item.session
-                        if not hasattr(session, '_test_state_cache'):
-                            # Manually create test_state instance
-                            # 手动创建test_state实例
-                            session._test_state_cache = TestState()
+                        test_state = getattr(session, '_test_state_cache', None)
 
-                        test_state = session._test_state_cache
-
-                        # Update test state based on test type
-                        # 根据测试类型更新测试状态
-                        if test_type == 'flash':
-                            test_state.mark_flash_passed()
-                        elif test_type == 'interface':
-                            test_state.mark_interface_passed()
-                        elif test_type == 'function':
-                            test_state.mark_function_passed()
+                        if test_state:
+                            # 根据测试类型更新测试状态 / Update test state based on test type
+                            if test_type == 'flash':
+                                if report.passed:
+                                    test_state.increment_flash_passed()
+                                elif report.failed:
+                                    test_state.mark_flash_failed()
+                            elif test_type == 'interface':
+                                if report.passed:
+                                    test_state.increment_interface_passed()
+                                elif report.failed:
+                                    test_state.mark_interface_failed()
+                            elif test_type == 'function':
+                                if report.passed:
+                                    test_state.increment_function_passed()
+                                elif report.failed:
+                                    test_state.mark_function_failed()
 
             except Exception:
-                # If we can't update test_state, continue anyway
-                # 如果无法更新test_state，继续执行
-                pass
+                pass  # 如果无法更新test_state，继续执行 / If can't update test_state, continue
 
 
 def pytest_runtest_makereport(item, call):
@@ -421,50 +484,25 @@ def pytest_collection_modifyitems(config, items):
     Use hooks to automatically manage test dependencies, avoiding manual decorators
 
     依赖规则 / Dependency Rules:
-    - 接口测试 (interface) → 依赖刷写测试完成 (test_flash_complete)
-    - 功能测试 (function) → 依赖接口测试完成 (test_interface_complete)
-    - 性能测试 (performance) → 依赖功能测试完成 (test_function_complete)
+    - 接口测试 (interface) → 依赖所有刷写测试完成 (all flash tests passed)
+    - 功能测试 (function) → 依赖所有接口测试完成 (all interface tests passed)
+    - 性能测试 (performance) → 依赖所有功能测试完成 (all function tests passed)
 
     Args:
         config: Pytest configuration / Pytest配置
         items: List of collected test items / 收集的测试项列表
     """
-    # ==================== 第一步：过滤辅助函数 / Step 1: Filter out helper functions ====================
-    # filtered_items = []
-    # for item in items:
-    #     # 检查是否是辅助函数（名称包含 _test_ 且在 common.py 中）
-    #     # Check if it's a helper function (name contains _test_ and is in common.py)
-    #     if "_test_" in item.name and "common.py" in str(item.fspath):
-    #         continue  # 跳过辅助函数 / Skip helper function
-    #     filtered_items.append(item)
-    # items[:] = filtered_items
+    # ==================== 第一步：统计各类测试数量 / Step 1: Count tests by category ====================
+    flash_count = sum(1 for item in items if item.get_closest_marker('flash'))
+    interface_count = sum(1 for item in items if item.get_closest_marker('interface'))
+    function_count = sum(1 for item in items if item.get_closest_marker('function'))
 
-    # ==================== 第二步：添加依赖标记 / Step 2: Add dependency markers ====================
-    # 获取test_state（如果已经创建）
-    # Get test_state (if already created)
-    test_state = None
-    try:
-        # 尝试从fixture manager获取 / Try to get from fixture manager
-        if hasattr(config, '_pytest'):
-            test_state = getattr(config, '_pytest', {}).get('_test_state', None)
-    except Exception:
-        pass
+    # 存储到 session 中供后续使用 / Store to session for later use
+    config._flash_test_total = flash_count
+    config._interface_test_total = interface_count
+    config._function_test_total = function_count
 
-    # 定义测试阶段顺序 / Define test phase order
-    phase_order = {
-        'flash': 0,
-        'interface': 1,
-        'function': 2,
-        'performance': 3
-    }
-
-    # 定义依赖映射 / Define dependency mapping
-    dependency_mapping = {
-        'interface': 'test_flash_complete',
-        'function': 'test_interface_complete',
-        'performance': 'test_function_complete'
-    }
-
+    # ==================== 第二步：注册依赖名称 / Step 2: Register dependency names ====================
     # 首先注册所有已命名测试到pytest-dependency系统
     # First register all named tests to pytest-dependency system
     for item in items:
@@ -481,29 +519,14 @@ def pytest_collection_modifyitems(config, items):
             item._dependency_names = getattr(item, '_dependency_names', [])
             item._dependency_names.append(dep_name)
 
-    # 禁用自动添加pytest-dependency标记，因为pytest_runtest_setup已经基于test_state实现了依赖检查
-    # Disable automatic pytest-dependency marker addition, as pytest_runtest_setup already implements
-    # dependency checking based on test_state
-    # for item in items:
-    #     # 检查测试类型标记 / Check test type markers
-    #     for marker_name in ['interface', 'function', 'performance']:
-    #         if item.get_closest_marker(marker_name):
-    #             # 添加自动依赖标记 / Add automatic dependency marker
-    #             dependency_name = dependency_mapping.get(marker_name)
-    #             if dependency_name:
-    #                 # 使用pytest-dependency的内部API添加依赖
-    #                 # Use pytest-dependency's internal API to add dependency
-    #                 item.add_marker(
-    #                     pytest.mark.dependency(
-    #                         depends=[dependency_name],
-    #                         name=f"{marker_name}_auto_dep_{item.name}"
-    #                     )
-    #                 )
-    #                 # 打印调试信息 / Print debug info
-    #                 print(f"[Auto Dependency] {item.name} → depends on {dependency_name}")
-    #             break
+    # 按测试类型排序 / Sort by test type
+    phase_order = {
+        'flash': 0,
+        'interface': 1,
+        'function': 2,
+        'performance': 3
+    }
 
-    # 按测试类型排序（可选） / Sort by test type (optional)
     def get_test_order(item):
         """获取测试顺序 / Get test order"""
         for marker_name, order in phase_order.items():
@@ -563,45 +586,46 @@ def pytest_runtest_setup(item):
     if not test_type:
         return  # 不是需要依赖检查的测试 / Not a test requiring dependency check
 
-    # 获取test_state fixture / Get test_state fixture
+    # 获取test_state / Get test_state
     test_state = None
     try:
-        # Try to get from session cache first
-        # 首先尝试从session缓存获取
         if hasattr(item, 'session'):
             session = item.session
             test_state = getattr(session, '_test_state_cache', None)
 
-        # If not in cache, try to get from fixture manager
-        # 如果不在缓存中，尝试从fixture管理器获取
-        if not test_state:
-            # 使用pytest的fixture管理器 / Use pytest's fixture manager
-            if hasattr(item, '_fixtureinfo'):
-                fixturedef = item._fixtureinfo.name2fixturedefs.get('test_state')
-                if fixturedef:
-                    test_state = fixturedef[0].cached_result
-                    if test_state:
-                        test_state = test_state[0]  # 获取fixture的返回值 / Get fixture return value
-                        # Cache it to session for future access
-                        # 缓存到session以便未来访问
-                        if hasattr(item, 'session'):
-                            item.session._test_state_cache = test_state
+            # 初始化测试计数（第一次运行该类型测试时）
+            # Initialize test counts (first time running this type of test)
+            if test_state and hasattr(session.config, '_flash_test_total'):
+                if test_type == 'interface' and test_state.flash_test_total == 0:
+                    test_state.set_flash_total(session.config._flash_test_total)
+                elif test_type == 'function' and test_state.interface_test_total == 0:
+                    test_state.set_interface_total(session.config._interface_test_total)
+                elif test_type == 'performance' and test_state.function_test_total == 0:
+                    test_state.set_function_total(session.config._function_test_total)
     except Exception:
         pass
 
-    # 如果无法获取test_state，跳过检查（在pytest初始化时可能会发生）
-    # If test_state cannot be obtained, skip check (may happen during pytest initialization)
+    # 如果无法获取test_state，跳过检查 / If can't get test_state, skip check
     if not test_state:
         return
 
     # 检查依赖 / Check dependencies
     skip_reason = None
-    if test_type == 'interface' and not test_state.flash_test_passed:
-        skip_reason = "Flash test has not passed yet. Skipping dependent tests. / 刷写测试未通过，跳过依赖测试。"
-    elif test_type == 'function' and not test_state.interface_test_passed:
-        skip_reason = "Interface test has not passed yet. Skipping dependent tests. / 接口测试未通过，跳过依赖测试。"
-    elif test_type == 'performance' and not test_state.function_test_passed:
-        skip_reason = "Function test has not passed yet. Skipping dependent tests. / 功能测试未通过，跳过依赖测试。"
+    if test_type == 'interface':
+        if not test_state.is_flash_complete():
+            passed = test_state.flash_test_passed_count
+            total = test_state.flash_test_total
+            skip_reason = f"Flash tests not all passed ({passed}/{total}). Skipping interface tests. / 刷写测试未全部通过（{passed}/{total}），跳过接口测试。"
+    elif test_type == 'function':
+        if not test_state.is_interface_complete():
+            passed = test_state.interface_test_passed_count
+            total = test_state.interface_test_total
+            skip_reason = f"Interface tests not all passed ({passed}/{total}). Skipping function tests. / 接口测试未全部通过（{passed}/{total}），跳过功能测试。"
+    elif test_type == 'performance':
+        if not test_state.is_function_complete():
+            passed = test_state.function_test_passed_count
+            total = test_state.function_test_total
+            skip_reason = f"Function tests not all passed ({passed}/{total}). Skipping performance tests. / 功能测试未全部通过（{passed}/{total}），跳过性能测试。"
 
     # 如果需要跳过，抛出SkipException / Skip if needed, raise SkipException
     if skip_reason:
