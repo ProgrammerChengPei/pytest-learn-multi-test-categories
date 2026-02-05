@@ -15,9 +15,9 @@ def _test_connection_lifecycle(client: Client) -> None:
     """
     Test connection lifecycle / 测试连接生命周期
 
-    Note: This test simulates timeout by using simulate_timeout() method.
+    Note: Uses simulate_timeout() method to simulate idle timeout.
     Exception is not caught so pytest and Allure can report detailed failure info.
-    注意: 此测试使用 simulate_timeout() 方法模拟超时。
+    注意: 使用 simulate_timeout() 方法模拟空闲超时。
     不捕获异常，以便 pytest 和 Allure 能报告详细的失败信息。
 
     Args:
@@ -26,32 +26,26 @@ def _test_connection_lifecycle(client: Client) -> None:
     Raises:
         AssertionError: If any assertion fails / 如果任何断言失败则抛出
     """
-    # Test initial connection (auto-fixture ensures this)
-    # 测试初始连接（自动fixture确保）
-    assert client.connected, "client should be connected initially"
+    # Test initial connection
+    assert client.connected, "Client should be connected initially"
 
     # Test request sending while connected
-    # 测试连接时发送请求
     request = {"type": "request", "command": "get_status", "id": 1, "token": client.token}
     assert client.send(request), "Should be able to send request"
 
-    # Simulate timeout by waiting for idle timeout to occur
-    # 通过等待空闲超时发生来模拟超时
-    print("  → Simulating timeout scenario...")
-    client.simulate_timeout()  # This uses time.sleep to wait for actual timeout
+    # Simulate timeout
+    print("  → Simulating idle timeout scenario...")
+    client.simulate_timeout()
 
-    # Verify client is now disconnected due to timeout
-    # 验证客户端因超时已断连
-    assert not client._connected, "client should be disconnected after timeout"
+    # Verify disconnection
+    assert not client._connected, "Client should be disconnected after timeout"
 
-    # Note: Reconnect here since this helper is called directly by test cases,
-    # not through fixtures. Next test's auto-fixture will also ensure connection.
-    # 注意: 这里重新连接，因为辅助函数被测试用例直接调用，而不是通过fixture调用。
-    # 下一个测试的自动fixture也会确保连接。
+    # Reconnect for next test
     client.reconnect()
-    print("✓ Timeout simulated (next test's auto-fixture will reconnect)")
+    print("  ✓ Connection lifecycle test passed")
 
 
+@pytest.mark.private
 def _test_message_sequence(client: Client, sequence: List[Dict[str, Any]]) -> None:
     """
     Test message sequencing / 测试消息顺序
@@ -70,9 +64,12 @@ def _test_message_sequence(client: Client, sequence: List[Dict[str, Any]]) -> No
         message["id"] = i + 1
         success = client.send(message)
         assert success, f"Failed to send message {i+1}"
-        time.sleep(0.1)
+        time.sleep(0.05)
+
+    print(f"  ✓ Message sequence test passed ({len(sequence)} messages)")
 
 
+@pytest.mark.private
 def _test_error_recovery(client: Client) -> None:
     """
     Test error recovery / 测试错误恢复
@@ -94,7 +91,7 @@ def _test_error_recovery(client: Client) -> None:
         "token": client.token
     }
     client.send(invalid_request)
-    time.sleep(0.5)
+    time.sleep(0.1)
 
     # Verify client can still send valid requests
     valid_request = {
@@ -106,7 +103,10 @@ def _test_error_recovery(client: Client) -> None:
     success = client.send(valid_request)
     assert success, "Should be able to send valid request after error"
 
+    print("  ✓ Error recovery test passed")
 
+
+@pytest.mark.private
 def _test_data_integrity(client: Client, test_data: str) -> None:
     """
     Test data integrity / 测试数据完整性
@@ -135,16 +135,18 @@ def _test_data_integrity(client: Client, test_data: str) -> None:
     }
     success = client.send(request)
     assert success, "Should be able to send data with integrity check"
-    time.sleep(0.5)
+    time.sleep(0.1)
+
+    print("  ✓ Data integrity test passed")
 
 
 def run_test_scenario(client: Client, scenario_name: str, steps: List[str]) -> Dict[str, Any]:
     """
     Run a test scenario / 运行测试场景
 
-    Note: This function is used for running scenarios programmatically.
+    Note: This function is used for programmatic execution.
     Exceptions are caught to return result dictionary.
-    注意: 此函数用于程序化运行场景。异常被捕获以返回结果字典。
+    注意: 此函数用于程序化执行。异常被捕获以返回结果字典。
 
     Args:
         client: Client instance / 客户端实例
@@ -192,7 +194,6 @@ def run_test_scenario(client: Client, scenario_name: str, steps: List[str]) -> D
                 "error": str(e),
                 "duration": duration
             })
-            # Stop on first failure
             break
 
     return result

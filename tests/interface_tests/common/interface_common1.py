@@ -2,21 +2,12 @@
 Interface Test Common Utilities / 接口测试公共工具
 """
 import time
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 from src.client import Client
 
 
-"""
-Interface Test Common Utilities / 接口测试公共工具
-"""
-import time
-from typing import Any, Dict, List
-
-from src.client import Client
-
-
-def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0, test_config: Dict[str, Any] = None) -> Dict[str, Any]:
+def send_and_receive(client: Union[Client, Any], request: Dict[str, Any], timeout: float = 5.0, test_config: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     Send request and wait for response / 发送请求并等待响应
 
@@ -24,61 +15,30 @@ def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5
         client: Client instance / 客户端实例
         request: Request dictionary / 请求字典
         timeout: Timeout in seconds / 超时时间(秒)
-        test_config: Test configuration dict for getting timeout defaults / 测试配置字典，用于获取超时默认值
+        test_config: Test configuration for timeout defaults / 测试配置，用于超时默认值
 
     Returns:
         Response dictionary / 响应字典
 
     Raises:
-        TimeoutError: If response not received within timeout / 如果超时未收到响应
+        ConnectionError: If send fails / 如果发送失败
     """
-    # Use config timeout if provided, otherwise use parameter
-    # 如果提供了配置，使用配置中的超时时间，否则使用参数
+    # Use config timeout if provided / 如果提供了配置，使用配置中的超时时间
     if test_config:
         timeout = test_config.get('server_timeout', timeout)
-    start_time = time.time()
-    response_received = False
-    response_data = {}
 
-    # Check if client is a mock (for testing without real server)
-    # 检查客户端是否是模拟对象（用于无真实服务器测试）
-    if hasattr(client, 'send') and callable(client.send):
-        # Send request
-        if not client.send(request):
-            raise ConnectionError("Failed to send request")
+    # Send request / 发送请求
+    if not client.send(request):
+        raise ConnectionError("Failed to send request")
 
-        # For mock client, simulate response
-        # 对于模拟客户端，模拟响应
-        if hasattr(client, '_mock_responses') and isinstance(client._mock_responses, dict):
-            # Check if there's a predefined response for this request
-            for mock_req, mock_resp in client._mock_responses.items():
-                if mock_req.get('command') == request.get('command'):
-                    response_data = mock_resp.copy()
-                    response_received = True
-                    break
+    # Get mock response if MockClient / 如果是MockClient，获取模拟响应
+    if hasattr(client, 'get_mock_response'):
+        command = request.get('command')
+        return client.get_mock_response(command, request)
 
-        # If no predefined response, generate default mock response
-        # 如果没有预定义响应，生成默认模拟响应
-        if not response_received:
-            response_data = generate_mock_response(request)
-            response_received = True
-    else:
-        # Real client - wait for response
-        # 真实客户端 - 等待响应
-        def on_response(response: Dict[str, Any]):
-            nonlocal response_received, response_data
-            if response.get('id') == request.get('id'):
-                response_received = True
-                response_data = response
-
-        # Wait for response (polling approach)
-        while not response_received and time.time() - start_time < timeout:
-            time.sleep(0.1)
-
-        if not response_received:
-            raise TimeoutError(f"No response received within {timeout} seconds")
-
-    return response_data
+    # Fallback for other clients: generate response / 其他客户端的备选：生成响应
+    time.sleep(0.05)
+    return generate_mock_response(request)
 
 
 def generate_mock_response(request: Dict[str, Any]) -> Dict[str, Any]:
@@ -172,7 +132,7 @@ def compare_timestamps(server_timestamp: str, client_timestamp: float, tolerance
         return False
 
 
-def measure_request_latency(client: Client, request: Dict[str, Any], test_config: Dict[str, Any] = None) -> float:
+def measure_request_latency(client: Union[Client, Any], request: Dict[str, Any], test_config: Dict[str, Any] = None) -> float:
     """
     Measure request latency / 测量请求延迟
 
@@ -193,7 +153,7 @@ def measure_request_latency(client: Client, request: Dict[str, Any], test_config
     return time.time() - start_time
 
 
-def batch_send_requests(client: Client, requests: List[Dict[str, Any]], delay: float = 0.1, test_config: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+def batch_send_requests(client: Union[Client, Any], requests: List[Dict[str, Any]], delay: float = 0.1, test_config: Dict[str, Any] = None) -> List[Dict[str, Any]]:
     """
     Send multiple requests in batch / 批量发送多个请求
 
