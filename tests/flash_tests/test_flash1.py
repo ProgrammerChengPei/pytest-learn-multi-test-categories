@@ -130,3 +130,12 @@ class TestFlash:
 
         print("✓ Flash test completed and marked as passed")
         print(f"✓ Flash test result saved to {result_file}")
+
+    def test_flash_failed(self, test_client, test_state, test_config):
+        """
+        Test flash failed / 测试刷写失败
+
+        This test simulates a failed flash test scenario.
+        此测试模拟一个失败的刷写测试场景。
+        """
+        raise Exception("Flash test failed")

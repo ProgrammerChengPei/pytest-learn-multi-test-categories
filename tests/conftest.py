@@ -13,8 +13,8 @@ from typing import Any, Dict, Optional
 
 import pytest
 
-from tests.comm.mock_client import MockClient
-from tests.comm.wireshark import WiresharkManager
+from tests.common.mock_client import MockClient
+from tests.common.wireshark import WiresharkManager
 
 # 添加项目根目录到Python路径
 project_root = Path(__file__).parent.parent
