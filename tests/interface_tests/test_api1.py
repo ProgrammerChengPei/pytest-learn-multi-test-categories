@@ -21,7 +21,7 @@ class TestInterface:
     """Interface test class / 接口测试类"""
 
     @pytest.mark.interface
-    def test_interface_get_status(self, test_state, test_client):
+    def test_interface_get_status(self, test_state, test_client, test_config):
         """
         Test get_status interface / 测试get_status接口
 
@@ -40,7 +40,8 @@ class TestInterface:
             "token": test_client.token
         }
 
-        response = send_and_receive(test_client, request, timeout=10.0)
+        server_timeout = test_config.get('server_timeout', 5.0)
+        response = send_and_receive(test_client, request, timeout=server_timeout)
 
         # Validate structure
         expected_fields = ["type", "id", "status", "server_time", "connections"]
@@ -58,7 +59,7 @@ class TestInterface:
         print("✓ get_status interface test passed")
 
     @pytest.mark.interface
-    def test_interface_health_check(self, test_state, test_client):
+    def test_interface_health_check(self, test_state, test_client, test_config):
         """
         Test health_check interface / 测试health_check接口
 
@@ -74,7 +75,8 @@ class TestInterface:
             "token": test_client.token
         }
 
-        response = send_and_receive(test_client, request, timeout=10.0)
+        server_timeout = test_config.get('server_timeout', 5.0)
+        response = send_and_receive(test_client, request, timeout=server_timeout)
 
         # Validate structure
         expected_fields = ["type", "id", "status"]
@@ -88,7 +90,7 @@ class TestInterface:
         print("✓ health_check interface test passed")
 
     @pytest.mark.interface
-    def test_interface_echo(self, test_state, test_client):
+    def test_interface_echo(self, test_state, test_client, test_config):
         """
         Test echo_with_timestamp interface / 测试echo_with_timestamp接口
 
@@ -106,7 +108,8 @@ class TestInterface:
             "token": test_client.token
         }
 
-        response = send_and_receive(test_client, request, timeout=10.0)
+        server_timeout = test_config.get('server_timeout', 5.0)
+        response = send_and_receive(test_client, request, timeout=server_timeout)
 
         # Validate structure
         expected_fields = ["type", "id", "status", "original_text", "server_response", "server_timestamp"]
@@ -133,7 +136,7 @@ class TestInterface:
         print("✓ echo_with_timestamp interface test passed")
 
     @pytest.mark.interface
-    def test_interface_batch_requests(self, test_state, test_client):
+    def test_interface_batch_requests(self, test_state, test_client, test_config):
         """
         Test batch interface requests / 测试批量接口请求
 
@@ -148,7 +151,7 @@ class TestInterface:
             {"type": "request", "command": "health_check", "id": 12, "token": test_client.token}
         ]
 
-        responses = batch_send_requests(test_client, requests, delay=0.2)
+        responses = batch_send_requests(test_client, requests, delay=0.2, test_config=test_config)
 
         # Validate all responses received
         assert len(responses) == len(requests), \
@@ -162,7 +165,7 @@ class TestInterface:
         print(f"✓ Batch requests test passed (success rate: {success_rate}%)")
 
     @pytest.mark.interface
-    def test_interface_latency(self, test_state, test_client):
+    def test_interface_latency(self, test_state, test_client, test_config):
         """
         Test interface request latency / 测试接口请求延迟
 
@@ -180,7 +183,7 @@ class TestInterface:
 
         latencies = []
         for _ in range(10):
-            latency = measure_request_latency(test_client, request)
+            latency = measure_request_latency(test_client, request, test_config=test_config)
             latencies.append(latency)
 
         avg_latency = sum(latencies) / len(latencies)

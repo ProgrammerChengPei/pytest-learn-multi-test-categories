@@ -16,7 +16,7 @@ from typing import Any, Dict, List
 from src.client import Client
 
 
-def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0) -> Dict[str, Any]:
+def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5.0, test_config: Dict[str, Any] = None) -> Dict[str, Any]:
     """
     Send request and wait for response / 发送请求并等待响应
 
@@ -24,6 +24,7 @@ def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5
         client: Client instance / 客户端实例
         request: Request dictionary / 请求字典
         timeout: Timeout in seconds / 超时时间(秒)
+        test_config: Test configuration dict for getting timeout defaults / 测试配置字典，用于获取超时默认值
 
     Returns:
         Response dictionary / 响应字典
@@ -31,6 +32,10 @@ def send_and_receive(client: Client, request: Dict[str, Any], timeout: float = 5
     Raises:
         TimeoutError: If response not received within timeout / 如果超时未收到响应
     """
+    # Use config timeout if provided, otherwise use parameter
+    # 如果提供了配置，使用配置中的超时时间，否则使用参数
+    if test_config:
+        timeout = test_config.get('server_timeout', timeout)
     start_time = time.time()
     response_received = False
     response_data = {}
@@ -167,26 +172,28 @@ def compare_timestamps(server_timestamp: str, client_timestamp: float, tolerance
         return False
 
 
-def measure_request_latency(client: Client, request: Dict[str, Any]) -> float:
+def measure_request_latency(client: Client, request: Dict[str, Any], test_config: Dict[str, Any] = None) -> float:
     """
     Measure request latency / 测量请求延迟
 
     Args:
         client: Client instance / 客户端实例
         request: Request to send / 要发送的请求
+        test_config: Test configuration for timeout / 测试配置，用于超时
 
     Returns:
         Latency in seconds / 延迟(秒)
     """
+    timeout = test_config.get('server_timeout', 10.0) if test_config else 10.0
     start_time = time.time()
     try:
-        send_and_receive(client, request, timeout=10.0)
+        send_and_receive(client, request, timeout=timeout, test_config=test_config)
     except (TimeoutError, ConnectionError):
         pass
     return time.time() - start_time
 
 
-def batch_send_requests(client: Client, requests: List[Dict[str, Any]], delay: float = 0.1) -> List[Dict[str, Any]]:
+def batch_send_requests(client: Client, requests: List[Dict[str, Any]], delay: float = 0.1, test_config: Dict[str, Any] = None) -> List[Dict[str, Any]]:
     """
     Send multiple requests in batch / 批量发送多个请求
 
@@ -194,14 +201,16 @@ def batch_send_requests(client: Client, requests: List[Dict[str, Any]], delay: f
         client: Client instance / 客户端实例
         requests: List of requests / 请求列表
         delay: Delay between requests in seconds / 请求之间的延迟(秒)
+        test_config: Test configuration for timeout / 测试配置，用于超时
 
     Returns:
         List of responses / 响应列表
     """
+    timeout = test_config.get('server_timeout', 10.0) if test_config else 10.0
     responses = []
     for request in requests:
         try:
-            response = send_and_receive(client, request, timeout=10.0)
+            response = send_and_receive(client, request, timeout=timeout, test_config=test_config)
             responses.append(response)
             time.sleep(delay)
         except (TimeoutError, ConnectionError) as e:

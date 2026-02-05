@@ -60,13 +60,13 @@ def test_client(test_config):
     client.host = test_config.get('host', 'localhost')
     client.port = test_config.get('port', 8080)
     client.token = test_config.get('token', 'your-secure-token-here')
-    client.timeout = test_config.get('timeout', 5.0)
+    client.timeout = test_config.get('server_timeout', 5.0)
 
     # Connection state tracking
     # 连接状态跟踪
     client._connected = True
     client._last_activity = time.time()
-    client._idle_timeout = 10.0  # seconds
+    client._idle_timeout = test_config.get('client_timeout', 10.0)  # seconds
 
     # Mock send method with activity tracking
     # 模拟send方法，带活动跟踪
@@ -81,8 +81,11 @@ def test_client(test_config):
 
     # Mock receive method with timeout simulation
     # 模拟receive方法，带超时模拟
-    def mock_receive(timeout=5.0):
+    def mock_receive(timeout=None):
         """Mock receive that simulates timeout"""
+        if timeout is None:
+            timeout = test_config.get('server_timeout', 5.0)
+
         if not client._connected:
             raise ConnectionError("Client not connected")
 
