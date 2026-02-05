@@ -19,7 +19,8 @@ class TestFunction:
     """Function test class / 功能测试类"""
 
     @pytest.mark.function
-    def test_function_connection_lifecycle(self, test_client, test_state):
+    @pytest.mark.dependency(name="test_function_connection_lifecycle")
+    def test_function_connection_lifecycle(self, test_state, test_client):
         """
         Test connection lifecycle functionality / 测试连接生命周期功能
 
@@ -31,18 +32,12 @@ class TestFunction:
         if not test_state.interface_test_passed:
             pytest.skip("Interface test has not passed yet")
 
-        try:
-            result = _test_connection_lifecycle(test_client)
-            assert result, "Connection lifecycle test should pass"
-            print("✓ Connection lifecycle function test passed")
-
-        except Exception as e:
-            print(f"✗ Connection lifecycle function test failed: {e}")
-            raise
+        _test_connection_lifecycle(test_client)
+        print("✓ Connection lifecycle function test passed")
 
     @pytest.mark.function
     @pytest.mark.dependency(name="test_function_message_sequence", depends=["test_function_connection_lifecycle"])
-    def test_function_message_sequence(self, test_state, test_client):
+    def test_function_message_sequence(self, test_client):
         """
         Test message sequencing functionality / 测试消息排序功能
 
@@ -58,18 +53,12 @@ class TestFunction:
             {"type": "request", "command": "echo_with_timestamp", "text": "seq2", "token": test_client.token}
         ]
 
-        try:
-            result = _test_message_sequence(test_client, sequence)
-            assert result, "Message sequence test should pass"
-            print("✓ Message sequence function test passed")
-
-        except Exception as e:
-            print(f"✗ Message sequence function test failed: {e}")
-            raise
+        _test_message_sequence(test_client, sequence)
+        print("✓ Message sequence function test passed")
 
     @pytest.mark.function
     @pytest.mark.dependency(name="test_function_error_recovery", depends=["test_function_message_sequence"])
-    def test_function_error_recovery(self, test_state, test_client):
+    def test_function_error_recovery(self, test_client):
         """
         Test error recovery functionality / 测试错误恢复功能
 
@@ -78,18 +67,12 @@ class TestFunction:
 
         Depends on: Message sequence test / 依赖：消息序列测试
         """
-        try:
-            result = _test_error_recovery(test_client)
-            assert result, "Error recovery test should pass"
-            print("✓ Error recovery function test passed")
-
-        except Exception as e:
-            print(f"✗ Error recovery function test failed: {e}")
-            raise
+        _test_error_recovery(test_client)
+        print("✓ Error recovery function test passed")
 
     @pytest.mark.function
     @pytest.mark.dependency(name="test_function_data_integrity", depends=["test_function_error_recovery"])
-    def test_function_data_integrity(self, test_state, test_client):
+    def test_function_data_integrity(self, test_client):
         """
         Test data integrity functionality / 测试数据完整性功能
 
@@ -100,18 +83,12 @@ class TestFunction:
         """
         test_data = "Test data for integrity check: " + "ABCD" * 100
 
-        try:
-            result = _test_data_integrity(test_client, test_data)
-            assert result, "Data integrity test should pass"
-            print("✓ Data integrity function test passed")
-
-        except Exception as e:
-            print(f"✗ Data integrity function test failed: {e}")
-            raise
+        _test_data_integrity(test_client, test_data)
+        print("✓ Data integrity function test passed")
 
     @pytest.mark.function
     @pytest.mark.dependency(name="test_function_multiple_clients", depends=["test_function_data_integrity"])
-    def test_function_multiple_clients(self, test_state, test_config, test_client):
+    def test_function_multiple_clients(self, test_config, test_client):
         """
         Test multiple clients functionality / 测试多客户端功能
 

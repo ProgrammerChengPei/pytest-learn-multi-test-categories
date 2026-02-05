@@ -179,7 +179,8 @@ python run_tests.py --type all --parallel --workers 4
 
 ```bash
 # Run all tests / 运行所有测试
-pytest tests/ -v
+pytest tests/ -v --alluredir=reports/allure-results/
+allure serve ./reports/allure-results/
 
 # Run specific test category / 运行特定测试类别
 pytest tests/ -v -m flash
@@ -188,7 +189,7 @@ pytest tests/ -v -m function
 pytest tests/ -v -m performance
 
 # Run with coverage / 运行并生成覆盖率
-pytest tests/ --cov=src --cov-report=html --cov-report=term-missing
+pytest tests/ --cov=src --cov-report=html:reports/coverage --cov-report=term-missing
 
 # Run in parallel / 并行运行
 pytest tests/ -n 4

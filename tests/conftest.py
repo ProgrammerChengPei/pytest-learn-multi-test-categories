@@ -98,21 +98,19 @@ def test_client(test_config):
 
     # Property for checking connection status
     # 检查连接状态的属性
-    @property
-    def connected(self):
+    def get_connected():
         """Check if client is connected (simulates idle timeout)"""
         # Auto-disconnect if idle timeout exceeded
-        if self._connected and (time.time() - self._last_activity > self._idle_timeout):
-            self._connected = False
-        return self._connected
+        if client._connected and (time.time() - client._last_activity > client._idle_timeout):
+            client._connected = False
+        return client._connected
 
-    @connected.setter
-    def connected(self, value):
-        self._connected = value
+    def set_connected(value):
+        client._connected = value
         if value:
-            self._last_activity = time.time()
+            client._last_activity = time.time()
 
-    client.connected = connected
+    client.connected = property(get_connected, set_connected)
 
     # Simulate timeout/disconnection
     # 模拟超时/断连
@@ -120,22 +118,39 @@ def test_client(test_config):
         """
         Simulate idle timeout / 模拟空闲超时
 
+        This simulates a real-world scenario where:
+        1. Client has been idle for a period (no activity)
+        2. The connection timeout check detects this and disconnects
+
+        In a real client, this happens when:
+        - The last activity time is set
+        - Periodically checking if (now - last_activity) > timeout
+        - Auto-disconnecting if timeout exceeded
+
         Args:
             idle_duration: Custom idle duration in seconds (default: exceeds timeout)
             idle_duration: 自定义空闲时长（秒，默认：超过超时时间）
-
-        Note: This simulates the effect of a timeout by setting the last activity
-        time far in the past and directly setting connected state to False.
-        注意: 通过设置最后活动时间为过去并直接设置连接状态为False来模拟超时效果。
         """
         if idle_duration is None:
             idle_duration = client._idle_timeout + 1
-        # Set last activity time to simulate idle duration
-        # 设置最后活动时间以模拟空闲时长
+
+        # Simulate idle duration by setting last_activity to past time
+        # 模拟空闲时长：设置最后活动时间为过去时间
+        # This represents: client was active at (now - idle_duration), then idle until now
+        # 这代表：客户端在 (now - idle_duration) 时有活动，然后一直空闲到现在
+        print(f"  → Simulating idle for {idle_duration:.1f}s (last activity was {idle_duration:.1f}s ago)")
         client._last_activity = time.time() - idle_duration
-        # Directly set connected state to False (simulate actual timeout)
-        # 直接设置连接状态为False（模拟实际超时）
-        client._connected = False
+
+        # Manually trigger the timeout check (simulating what happens in real client)
+        # 手动触发超时检查（模拟真实客户端中发生的情况）
+        elapsed = time.time() - client._last_activity
+        if elapsed > client._idle_timeout:
+            # In a real client, this happens when checking connection status
+            # 在真实客户端中，这发生在检查连接状态时
+            print(f"  → Idle timeout detected: {elapsed:.1f}s > {client._idle_timeout}s, disconnecting...")
+            client._connected = False
+        else:
+            print(f"  → Idle duration: {elapsed:.1f}s, still within timeout limit")
 
     client.simulate_timeout = simulate_timeout
 
@@ -389,6 +404,39 @@ def pytest_runtest_logreport(report):
             name_display = chinese_name if chinese_name else test_result['name']
             print(f"  [{status_icon}] {test_type.upper()}: {name_display} ({report.duration:.3f}s)")
 
+        # Update test_state when test passes
+        # 测试通过时更新test_state
+        if report.passed:
+            # Get session-scoped test_state fixture
+            # 获取session范围的test_state fixture
+            try:
+                if hasattr(report, 'item'):
+                    item = report.item
+                    # Try to get test_state from session
+                    # 尝试从session获取test_state
+                    if hasattr(item, 'session'):
+                        session = item.session
+                        if not hasattr(session, '_test_state_cache'):
+                            # Manually create test_state instance
+                            # 手动创建test_state实例
+                            session._test_state_cache = TestState()
+
+                        test_state = session._test_state_cache
+
+                        # Update test state based on test type
+                        # 根据测试类型更新测试状态
+                        if test_type == 'flash':
+                            test_state.mark_flash_passed()
+                        elif test_type == 'interface':
+                            test_state.mark_interface_passed()
+                        elif test_type == 'function':
+                            test_state.mark_function_passed()
+
+            except Exception:
+                # If we can't update test_state, continue anyway
+                # 如果无法更新test_state，继续执行
+                pass
+
 
 def pytest_runtest_makereport(item, call):
     """
@@ -639,13 +687,26 @@ def pytest_runtest_setup(item):
     # 获取test_state fixture / Get test_state fixture
     test_state = None
     try:
-        # 使用pytest的fixture管理器 / Use pytest's fixture manager
-        if hasattr(item, '_fixtureinfo'):
-            fixturedef = item._fixtureinfo.name2fixturedefs.get('test_state')
-            if fixturedef:
-                test_state = fixturedef[0].cached_result
-                if test_state:
-                    test_state = test_state[0]  # 获取fixture的返回值 / Get fixture return value
+        # Try to get from session cache first
+        # 首先尝试从session缓存获取
+        if hasattr(item, 'session'):
+            session = item.session
+            test_state = getattr(session, '_test_state_cache', None)
+
+        # If not in cache, try to get from fixture manager
+        # 如果不在缓存中，尝试从fixture管理器获取
+        if not test_state:
+            # 使用pytest的fixture管理器 / Use pytest's fixture manager
+            if hasattr(item, '_fixtureinfo'):
+                fixturedef = item._fixtureinfo.name2fixturedefs.get('test_state')
+                if fixturedef:
+                    test_state = fixturedef[0].cached_result
+                    if test_state:
+                        test_state = test_state[0]  # 获取fixture的返回值 / Get fixture return value
+                        # Cache it to session for future access
+                        # 缓存到session以便未来访问
+                        if hasattr(item, 'session'):
+                            item.session._test_state_cache = test_state
     except Exception:
         pass
 
@@ -665,5 +726,4 @@ def pytest_runtest_setup(item):
 
     # 如果需要跳过，抛出SkipException / Skip if needed, raise SkipException
     if skip_reason:
-        pytest.skip(skip_reason)
         pytest.skip(skip_reason)

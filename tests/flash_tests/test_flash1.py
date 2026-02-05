@@ -42,6 +42,8 @@ class TestFlash:
 
         This test verifies the system is ready for flashing.
         此测试验证系统已准备好进行刷写。
+
+        Depends on: connection test / 依赖：连接测试必须通过
         """
         # Simulate flash preparation check
         preparation_data = {
@@ -63,6 +65,8 @@ class TestFlash:
 
         This test verifies that firmware can be uploaded successfully.
         此测试验证固件可以成功上传。
+
+        Depends on: prepare test / 依赖：准备测试必须通过
         """
         # Simulate firmware upload
         firmware_data = "Firmware binary data simulation"
@@ -88,6 +92,8 @@ class TestFlash:
 
         This test verifies that the flashed firmware matches the expected checksum.
         此测试验证刷写的固件与预期校验和匹配。
+
+        Depends on: upload test / 依赖：上传测试必须通过
         """
         # Simulate flash verification
         expected_checksum = "abc123def456"
@@ -104,6 +110,8 @@ class TestFlash:
 
         This test marks the flash test as completed and saves results.
         此测试标记刷写测试完成并保存结果。
+
+        Depends on: verify test / 依赖：验证测试必须通过
         """
         # Flash test completed successfully
         test_state.mark_flash_passed()
