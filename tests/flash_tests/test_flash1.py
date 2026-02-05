@@ -131,11 +131,23 @@ class TestFlash:
         print("✓ Flash test completed and marked as passed")
         print(f"✓ Flash test result saved to {result_file}")
 
-    def test_flash_failed(self, test_client, test_state, test_config):
+    def test_not_marked_failed():
         """
-        Test flash failed / 测试刷写失败
+        Test failed without flash mark / 不带刷写测试标记的用例失败
+        """
+        assert False
 
-        This test simulates a failed flash test scenario.
-        此测试模拟一个失败的刷写测试场景。
+    @pytest.mark.flash
+    def test_error_in_class(self, test_client, test_state, test_config):
         """
-        raise Exception("Flash test failed")
+        Test error with flash mark and in TestFlash class / 带刷写测试标记的、TestFlash测试类中的用例Error
+        """
+        raise Exception("test_error_in_class")
+
+
+@pytest.mark.flash
+def test_failed_outof_class(test_client, test_state, test_config):
+    """
+    Test failed with flash mark, but not in class / 带刷写测试标记的、不在测试类中的用例失败
+    """
+    assert False

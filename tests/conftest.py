@@ -74,6 +74,9 @@ class TestState:
         self.function_test_total = 0
         self.function_test_passed_count = 0
         self.function_test_failed = False
+        self.performance_test_total = 0
+        self.performance_test_passed_count = 0
+        self.performance_test_failed = False
         self.results: Dict[str, Any] = {}
 
     def set_flash_total(self, count: int):
@@ -129,6 +132,24 @@ class TestState:
         return (self.function_test_passed_count == self.function_test_total
                 and self.function_test_total > 0
                 and not self.function_test_failed)
+
+    def set_performance_total(self, count: int):
+        """设置 performance 测试总数 / Set total performance tests count"""
+        self.performance_test_total = count
+
+    def increment_performance_passed(self):
+        """增加 performance 测试通过计数 / Increment performance tests passed count"""
+        self.performance_test_passed_count += 1
+
+    def mark_performance_failed(self):
+        """标记 performance 测试失败 / Mark performance test failed"""
+        self.performance_test_failed = True
+
+    def is_performance_complete(self) -> bool:
+        """检查 performance 测试是否全部通过 / Check if all performance tests passed"""
+        return (self.performance_test_passed_count == self.performance_test_total
+                and self.performance_test_total > 0
+                and not self.performance_test_failed)
 
     # 保留旧方法以兼容 / Keep old methods for compatibility
     def mark_flash_passed(self):
@@ -266,6 +287,66 @@ def pytest_runtest_logreport(report):
         if capture_file:
             print(f"  [Wireshark] Capture saved: {capture_file.name}")
 
+    # 获取测试类型（在 setup 阶段就需要确定，因为 skipped 可能发生在 setup）
+    # Get test type (need to determine in setup phase since skip may happen in setup)
+    # 优先从 report.item 获取，其次从全局 _current_test_item 获取
+    # Prefer getting from report.item, then from global _current_test_item
+    test_node = None
+    if hasattr(report, 'item') and report.item:
+        test_node = report.item
+    elif _current_test_item:
+        test_node = _current_test_item
+
+    if not test_node:
+        return
+
+    # 从测试节点获取测试类别 / Get test category from test node
+    test_type = None
+    for marker_name in ['flash', 'interface', 'function', 'performance']:
+        if test_node.get_closest_marker(marker_name):
+            test_type = marker_name
+            break
+
+    # 获取测试名称 / Get test name
+    test_name = report.nodeid.split('::')[-1]
+
+    # Update test_state when test completes (any phase: setup, call, teardown)
+    # 测试完成时更新test_state（任何阶段：setup, call, teardown）
+    # 注意：需要在 test_type 判断之外，因为即使没有标记的测试也会被执行
+    if report.when != 'call':
+        return
+
+    # 获取session对象 / Get session object
+    # 从 test_node 获取 session，test_node 在前面已经从 report.item 或 _current_test_item 获取
+    test_state = None
+    if test_node and hasattr(test_node, 'session'):
+        session = test_node.session
+        test_state = getattr(session, '_test_state_cache', None)
+
+    if test_state and test_type:
+        # 根据测试类型更新测试状态 / Update test state based on test type
+        if test_type == 'flash':
+            if report.passed:
+                test_state.increment_flash_passed()
+            else:
+                test_state.mark_flash_failed()
+        elif test_type == 'interface':
+            if report.passed:
+                test_state.increment_interface_passed()
+            else:
+                test_state.mark_interface_failed()
+        elif test_type == 'function':
+            if report.passed:
+                test_state.increment_function_passed()
+            else:
+                test_state.mark_function_failed()
+        elif test_type == 'performance':
+            if report.passed:
+                test_state.increment_performance_passed()
+            else:
+                test_state.mark_performance_failed()
+
+
     # 只在测试完成时收集结果 / Collect results only when test is complete
     if report.when == 'call':
         generator = _excel_report_generator
@@ -283,6 +364,9 @@ def pytest_runtest_logreport(report):
             if test_node.get_closest_marker(marker_name):
                 test_type = marker_name
                 break
+
+        # 获取测试名称 / Get test name
+        test_name = report.nodeid.split('::')[-1]
 
         if test_type:
             # 提取docstring用于报告 / Extract docstring for reporting
@@ -339,35 +423,7 @@ def pytest_runtest_logreport(report):
             name_display = chinese_name if chinese_name else test_result['name']
             print(f"  [{status_icon}] {test_type.upper()}: {name_display} ({report.duration:.3f}s)")
 
-            # Update test_state when test completes (passed or failed)
-            # 测试完成时更新test_state（通过或失败）
-            try:
-                if hasattr(report, 'item'):
-                    item = report.item
-                    if hasattr(item, 'session'):
-                        session = item.session
-                        test_state = getattr(session, '_test_state_cache', None)
 
-                        if test_state:
-                            # 根据测试类型更新测试状态 / Update test state based on test type
-                            if test_type == 'flash':
-                                if report.passed:
-                                    test_state.increment_flash_passed()
-                                elif report.failed:
-                                    test_state.mark_flash_failed()
-                            elif test_type == 'interface':
-                                if report.passed:
-                                    test_state.increment_interface_passed()
-                                elif report.failed:
-                                    test_state.mark_interface_failed()
-                            elif test_type == 'function':
-                                if report.passed:
-                                    test_state.increment_function_passed()
-                                elif report.failed:
-                                    test_state.mark_function_failed()
-
-            except Exception:
-                pass  # 如果无法更新test_state，继续执行 / If can't update test_state, continue
 
 
 def pytest_runtest_makereport(item, call):
@@ -496,11 +552,13 @@ def pytest_collection_modifyitems(config, items):
     flash_count = sum(1 for item in items if item.get_closest_marker('flash'))
     interface_count = sum(1 for item in items if item.get_closest_marker('interface'))
     function_count = sum(1 for item in items if item.get_closest_marker('function'))
+    performance_count = sum(1 for item in items if item.get_closest_marker('performance'))
 
     # 存储到 session 中供后续使用 / Store to session for later use
     config._flash_test_total = flash_count
     config._interface_test_total = interface_count
     config._function_test_total = function_count
+    config._performance_test_total = performance_count
 
     # ==================== 第二步：注册依赖名称 / Step 2: Register dependency names ====================
     # 首先注册所有已命名测试到pytest-dependency系统
@@ -602,6 +660,7 @@ def pytest_runtest_setup(item):
                     test_state.set_interface_total(session.config._interface_test_total)
                 elif test_type == 'performance' and test_state.function_test_total == 0:
                     test_state.set_function_total(session.config._function_test_total)
+                    test_state.set_performance_total(session.config._performance_test_total)
     except Exception:
         pass
 

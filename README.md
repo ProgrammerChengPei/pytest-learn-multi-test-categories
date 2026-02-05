@@ -181,8 +181,8 @@ python run_tests.py --type all --parallel --workers 4
 
 ```bash
 # Run all tests / 运行所有测试
-pytest tests/ -v --alluredir=reports/allure-results/
-allure serve ./reports/allure-results/ --clean
+pytest tests/ -v --alluredir=reports/allure-results/ -clean
+allure serve ./reports/allure-results/
 
 # Run specific test category / 运行特定测试类别
 pytest tests/ -v -m flash
