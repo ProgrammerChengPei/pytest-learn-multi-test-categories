@@ -1,7 +1,7 @@
 """
 Performance Test Cases / 性能测试用例
 """
-import json
+import json5
 import time
 
 import pytest
@@ -188,7 +188,7 @@ class TestPerformance:
         # Save performance test result
         result_file = reports_dir / "performance_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
-            json.dump(summary, f, ensure_ascii=False, indent=2)
+            json5.dump(summary, f, ensure_ascii=False, indent=2)
 
         print(f"✓ Performance test suite completed ({summary['tests_passed']}/{summary['total_tests']} tests passed)")
         print(f"✓ Performance test result saved to {result_file}")

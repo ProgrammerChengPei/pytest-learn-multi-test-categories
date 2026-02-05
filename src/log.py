@@ -1,6 +1,6 @@
 # Configure logging
 
-import json
+import json5
 import logging
 
 logging.basicConfig(
@@ -16,5 +16,5 @@ logger = logging.getLogger(__name__)
 
 def load_config(path: str):
     with open(path, 'r') as f:
-        config = json.load(f)
+        config = json5.load(f)
     return config

@@ -5,5 +5,11 @@
   "heartbeat_interval": 5,
   "token": "your-secure-token-here",
   "server_timeout": 5.0,
-  "client_timeout": 10.0
+  "client_timeout": 10.0,
+  "wireshark": {
+    "enabled": true,
+    "interface": "WLAN",
+    "capture_filter": "port 8080",
+    "wireshark_path": "C:\\Program Files\\Wireshark\\tshark.exe"
+  }
 }

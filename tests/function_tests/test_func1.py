@@ -1,7 +1,7 @@
 """
 Function Test Cases / 功能测试用例
 """
-import json
+import json5
 import time
 
 import pytest
@@ -146,7 +146,7 @@ class TestFunction:
 
         result_file = reports_dir / "function_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+            json5.dump(result, f, ensure_ascii=False, indent=2)
 
         print("✓ Function test completed and marked as passed")
         print(f"✓ Function test result saved to {result_file}")

@@ -3,7 +3,7 @@ Enhanced TCP Server for pytest-learn-multi-test-categories plugin.
 Implements JSON-RPC style protocol with connection management, security, and logging.
 """
 import argparse
-import json
+import json5
 import os
 import socket
 import sys
@@ -327,7 +327,7 @@ def load_config(config_path: str) -> Dict[str, Any]:
     """Load server configuration from JSON file."""
     try:
         with open(config_path, 'r') as f:
-            return json.load(f)
+            return json5.load(f)
     except FileNotFoundError:
         logger.warning(f"Config file {config_path} not found - using defaults")
         return {}

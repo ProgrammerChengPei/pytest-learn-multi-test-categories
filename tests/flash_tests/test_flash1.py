@@ -2,7 +2,7 @@
 Flash/Firmware Test Cases / 刷写/固件测试用例
 """
 import hashlib
-import json
+import json5
 import time
 
 import pytest
@@ -126,7 +126,7 @@ class TestFlash:
 
         result_file = reports_dir / "flash_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+            json5.dump(result, f, ensure_ascii=False, indent=2)
 
         print("✓ Flash test completed and marked as passed")
         print(f"✓ Flash test result saved to {result_file}")

@@ -2,7 +2,7 @@
 Test client for the enhanced TCP server.
 Sends a valid request with correct message type and token.
 """
-import json
+import json5
 import os
 import socket
 import sys
@@ -247,7 +247,7 @@ if __name__ == "__main__":
         # Load configuration
         config_path = 'configs/config.json'
         with open(config_path, 'r') as f:
-            config = json.load(f)
+            config = json5.load(f)
         
         host = config.get('host', 'localhost')
         port = config.get('port', 8080)

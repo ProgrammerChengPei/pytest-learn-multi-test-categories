@@ -27,11 +27,11 @@ def performance_test_result(reports_dir):
     Returns:
         dict: Performance test result or None / 性能测试结果或None
     """
-    import json
+    import json5
     from pathlib import Path
 
     result_file = reports_dir / "performance_test_result.json"
     if result_file.exists():
         with open(result_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            return json5.load(f)
     return None

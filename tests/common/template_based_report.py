@@ -3,7 +3,7 @@ Template-based Excel Report Generator / 基于模板的Excel报告生成器
 
 使用Excel模板和JSON配置生成测试报告
 """
-import json
+import json5
 import time
 from datetime import datetime
 from pathlib import Path
@@ -44,7 +44,7 @@ class TemplateBasedReportGenerator:
     def _load_config(self) -> Dict[str, Any]:
         """加载JSON配置 / Load JSON config"""
         with open(self.config_path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            return json5.load(f)
 
     def start(self):
         """开始计时 / Start timing"""
@@ -104,7 +104,8 @@ class TemplateBasedReportGenerator:
         # 生成文件名 / Generate filename
         if not filename:
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-            filename = f"test_report_{timestamp}.xlsx"
+            # filename = f"test_report_{timestamp}.xlsx"
+            filename = f"test_report.xlsx"
 
         # 保存报告 / Save report
         output_path = self.output_dir / filename

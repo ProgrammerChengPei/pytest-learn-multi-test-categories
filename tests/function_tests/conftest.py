@@ -27,11 +27,11 @@ def function_test_result(reports_dir):
     Returns:
         dict: Function test result or None / 功能测试结果或None
     """
-    import json
+    import json5
     from pathlib import Path
 
     result_file = reports_dir / "function_test_result.json"
     if result_file.exists():
         with open(result_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            return json5.load(f)
     return None

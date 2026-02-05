@@ -4,7 +4,7 @@ Common Test Utilities / 测试公共工具模块
 """
 import functools
 import hashlib
-import json
+import json5
 import time
 from pathlib import Path
 from typing import Any, Dict, List
@@ -72,7 +72,7 @@ def load_test_data(test_name: str, data_dir: Path) -> Dict[str, Any]:
     data_file = data_dir / f"{test_name}.json"
     if data_file.exists():
         with open(data_file, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            return json5.load(f)
     return {}
 
 
@@ -87,7 +87,7 @@ def save_test_result(result: TestResult, output_dir: Path):
     output_dir.mkdir(exist_ok=True)
     output_file = output_dir / f"{result.test_name}_result.json"
     with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(result.to_dict(), f, ensure_ascii=False, indent=2)
+        json5.dump(result.to_dict(), f, ensure_ascii=False, indent=2)
 
 
 class PerformanceMetrics:

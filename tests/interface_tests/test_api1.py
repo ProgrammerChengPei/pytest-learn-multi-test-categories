@@ -1,7 +1,7 @@
 """
 Interface Test Cases / 接口测试用例
 """
-import json
+import json5
 import time
 
 import pytest
@@ -219,7 +219,7 @@ class TestInterface:
 
         result_file = reports_dir / "interface_test_result.json"
         with open(result_file, 'w', encoding='utf-8') as f:
-            json.dump(result, f, ensure_ascii=False, indent=2)
+            json5.dump(result, f, ensure_ascii=False, indent=2)
 
         print("✓ Interface test completed and marked as passed")
         print(f"✓ Interface test result saved to {result_file}")
